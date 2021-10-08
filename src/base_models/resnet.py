@@ -1,8 +1,4 @@
 import os
-import numpy as np
-import pandas as pd
-import PIL.Image as Image
-
 import torch 
 import torch.nn as nn
 
@@ -99,11 +95,12 @@ class Bottleneck(nn.Module):
     
 
 class ResNet(nn.Module):
-    def __init__(self,config, output_dim= None, clf= True,image_channels=3):
+    def __init__(self,config, output_dim= 10, clf= True,image_channels=3):
         super(ResNet, self).__init__()
     
         block, n_blocks, channels = config
         self.image_channels= image_channels
+        self.output_dim = output_dim
         self.clf = clf
         self.in_channels = channels[0]
     
@@ -121,7 +118,7 @@ class ResNet(nn.Module):
         self.conv5_x = self._make_layer(block, n_blocks[3],channels[3], stride= 2)
     
         self.avgpool = nn.AdaptiveAvgPool2d((1,1))
-        self.fc = nn.Linear(self.in_channels, output_dim)
+        self.fc = nn.Linear(self.in_channels, self.output_dim)
     
     
     
@@ -142,6 +139,24 @@ class ResNet(nn.Module):
         
         return x
     
+    
+    
+    def _make_layer(self,block, n_blocks, channels, stride= 1):
+        
+        layers = []
+        if self.in_channels != block.expansion * channels:
+            downsample = True
+        else:
+            downsample = False
+            
+        layers.append(block(self.in_channels,channels,stride,downsample))
+        
+        for i in range(1,n_blocks):
+            layers.append(block(block.expansion * channels, channels))
+            
+        self.in_channels = block.expansion * channels
+        
+        return nn.Sequential(*layers)
     
     
     def _make_layer(self,block, n_blocks, channels, stride= 1):
@@ -187,23 +202,23 @@ resnet152_config = ResNetConfig(block = Bottleneck,
                                 channels = [64, 128, 256, 512])
 
 
-def resnet18(output_dim :int = 10,image_channels :int =3, clf:bool = True) -> nn.Module:
+def resnet18(output_dim :int = 10,image_channels :int =3, clf:bool = True) -> ResNet:
     config = resnet18_config
     return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
 
-def resnet34(output_dim :int = 10,image_channels :int =3, clf:bool = True) -> nn.Module:
+def resnet34(output_dim :int = 1000,image_channels :int =3, clf:bool = True) -> ResNet:
     config = resnet34_config
     return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
 
 
-def resnet50(output_dim :int = 10,image_channels :int =3, clf:bool = True) -> nn.Module:
+def resnet50(output_dim :int = 1000,image_channels :int =3, clf:bool = True) -> ResNet:
     config = resnet50_config
     return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
 
-def resnet101(output_dim :int = 10,image_channels :int =3, clf:bool = True) -> nn.Module:
+def resnet101(output_dim :int = 1000,image_channels :int =3, clf:bool = True) -> ResNet:
     config = resnet101_config
     return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
 
-def resnet152(output_dim :int = 10,image_channels :int =3, clf:bool = True) -> nn.Module:
+def resnet152(output_dim :int = 1000,image_channels :int =3, clf:bool = True) -> ResNet:
     config = resnet152_config
     return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
