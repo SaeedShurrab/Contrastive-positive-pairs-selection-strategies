@@ -134,8 +134,9 @@ class DenseNet(nn.Module):
         x = self.transition3(x)
         x = self.block4(x)
         x = self.norm5(x)
+        x = self.averag_pool(x)
+        
         if self.clf:
-            x = self.averag_pool(x)
             x = x.view(x.shape[0], -1)
             x = self.fc(x)
     

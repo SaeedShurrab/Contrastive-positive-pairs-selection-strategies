@@ -157,9 +157,9 @@ class GoogleNet(nn.Module):
         x = self.max_pool4(x)
         x = self.inception5a(x)
         x = self.inception5b(x)
+        x = self.avgpool(x)
         
         if self.clf:
-            x = self.avgpool(x)
             x = torch.flatten(x,1)
             x = self.dropout(x)
             x = self.fc1(x)

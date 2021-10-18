@@ -305,8 +305,9 @@ class InceptionV3(nn.Module):
         
         x = self.inception_e_1(x)
         x = self.inception_e_2(x)
+        x = self.avg_pool1(x)
+
         if self.clf:
-            x = self.avg_pool1(x)
             x = self.dropout(x)
             x = torch.flatten(x,1)
             x = self.fc1(x)
