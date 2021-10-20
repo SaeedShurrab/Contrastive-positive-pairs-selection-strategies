@@ -127,7 +127,7 @@ class BYOL(nn.Module):
         for param in model.parameters():
             param.requires_grad = grad
           
-        
+    @torch.no_grad()    
     def update_target_network(self) -> None:
         for online_weights, target_weights in zip(self.online_encoder.parameters(), 
                                                   self.target_network.parameters()
