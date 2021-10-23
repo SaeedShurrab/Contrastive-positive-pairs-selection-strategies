@@ -2,23 +2,38 @@
 
 import torch 
 import torch.nn as nn
+from torch.tensor import Tensor
+from typing import Tuple
 
 
 class ConvBlock(nn.Module):
-    def __init__(self,**kwargs):
+    def __init__(self,
+                 **kwargs
+                ) -> None:
         super(ConvBlock,self).__init__()
         
         self.block = nn.Sequential(nn.Conv2d(**kwargs),
                                    nn.BatchNorm2d(kwargs['out_channels']),
                                    nn.ReLU(inplace= True))
     
-    def forward(self,x):
+    def forward(self,
+                x: Tensor
+               ) -> Tensor:
+
         x = self.block(x)
         return x
 
 
 class InceptionBlock(nn.Module):
-    def __init__(self, in_channels, ch1x1, ch3x3red,ch3x3, ch5x5red, ch5x5, pool_proj):
+    def __init__(self, 
+                 in_channels:int,
+                 ch1x1: int,
+                 ch3x3red: int, 
+                 ch3x3: int , 
+                 ch5x5red: int,
+                 ch5x5: int, 
+                 pool_proj: int
+                 ) -> None:
         super(InceptionBlock, self).__init__()
         
         
@@ -38,7 +53,10 @@ class InceptionBlock(nn.Module):
                                     ConvBlock(in_channels= in_channels, out_channels= pool_proj,
                                               kernel_size= 1, bias= False))
         
-    def forward (self,x):
+    def forward (self,
+                 x: Tensor
+                 ) -> Tensor:
+
         branch1 = self.branch1(x)
         branch2 = self.branch2(x)
         branch3 = self.branch3(x)
@@ -50,8 +68,13 @@ class InceptionBlock(nn.Module):
 
 
 class InceptionAux(nn.Module):
-    def __init__(self,in_channels, output_dim, aux_clf):
+    def __init__(self,
+                 in_channels: int, 
+                 output_dim: int, 
+                 aux_clf: bool
+                 ) -> None:
         super(InceptionAux,self).__init__()
+
         self.aux_clf= aux_clf
         
         self.conv1 = ConvBlock(in_channels= in_channels, out_channels= 128, kernel_size= 1, bias= False)
@@ -64,7 +87,10 @@ class InceptionAux(nn.Module):
         self.dropout = nn.Dropout(p= 0.7)
         self.relu = nn.ReLU(inplace= True)
         
-    def forward(self, x):
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
+
         x = self.avgpool(x)
         x = self.conv1(x)
         x = torch.flatten(x,1)
@@ -78,12 +104,15 @@ class InceptionAux(nn.Module):
         
         
 class GoogleNet(nn.Module):
-    def __init__(self,image_channels= 3, output_dim=1000, clf= True, aux_clf= True):
+    def __init__(self,
+                 image_channels: int =3, 
+                 output_dim: int = 1000, 
+                 aux_clf: bool = True
+                 ) -> None:
         super(GoogleNet,self).__init__()
         
 
         self.aux_clf = aux_clf
-        self.clf = clf
         
         self.conv1 = ConvBlock(in_channels= image_channels, out_channels= 64, kernel_size= 7, 
                                stride= 2, padding= 3, bias= False)
@@ -121,6 +150,11 @@ class GoogleNet(nn.Module):
         self.inception5b = InceptionBlock(in_channels= 832, ch1x1= 384, ch3x3red= 192, ch3x3= 384, 
                                           ch5x5red= 48, ch5x5=128, pool_proj=128)
         
+
+        if aux_clf:
+            self.aux1 = InceptionAux(in_channels= 512, output_dim= output_dim, aux_clf= aux_clf)
+            self.aux2 = InceptionAux(in_channels= 528, output_dim= output_dim, aux_clf= aux_clf)
+
         
         
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1,1))
@@ -128,13 +162,13 @@ class GoogleNet(nn.Module):
         self.fc1 = nn.Linear(in_features=1024,out_features=output_dim)
         
         
-        if aux_clf:
-            self.aux1 = InceptionAux(in_channels= 512, output_dim= output_dim, aux_clf= aux_clf)
-            self.aux2 = InceptionAux(in_channels= 528, output_dim= output_dim, aux_clf= aux_clf)
+
             
         
         
-    def forward(self,x):
+    def forward(self,
+                x: Tensor
+               ) -> Tuple[Tensor]:
         x = self.conv1(x)
         x = self.max_pool1(x)
         x = self.conv2(x)
@@ -158,11 +192,9 @@ class GoogleNet(nn.Module):
         x = self.inception5a(x)
         x = self.inception5b(x)
         x = self.avgpool(x)
-        
-        if self.clf:
-            x = torch.flatten(x,1)
-            x = self.dropout(x)
-            x = self.fc1(x)
+        x = torch.flatten(x,1)
+        x = self.dropout(x)
+        x = self.fc1(x)
         
         if self.aux_clf:
             return x, x_aux1, x_aux2
@@ -171,5 +203,12 @@ class GoogleNet(nn.Module):
 
 
 
-def googlenet(imag_channels:int = 3, output_dim:int = 1000,clf:bool =True, aux_clf: bool =True) -> GoogleNet:
-    return GoogleNet(imag_channels,output_dim,clf, aux_clf)
+def googlenet(imag_channels:int = 3,
+              output_dim:int = 1000, 
+              aux_clf: bool =True
+             ) -> GoogleNet:
+    
+    return GoogleNet(imag_channels,
+                     output_dim, 
+                     aux_clf
+                     )

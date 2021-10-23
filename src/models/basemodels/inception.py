@@ -1,21 +1,31 @@
-import torch 
+from typing import Tuple
+import torch
+from torch import tensor 
 import torch.nn as nn
+from torch import Tensor
 
 class ConvBlock(nn.Module):
-    def __init__(self,**kwargs):
+    def __init__(self,
+                 **kwargs
+                 ) -> None:
         super(ConvBlock,self).__init__()
         
         self.block = nn.Sequential(nn.Conv2d(**kwargs),
                                    nn.BatchNorm2d(kwargs['out_channels'],eps=0.001),
                                    nn.ReLU(inplace= True))
     
-    def forward(self,x):
+    def forward(self,
+                x:Tensor
+               ) -> Tensor:
         x = self.block(x)
         return x
 
 
 class InceptionA(nn.Module):
-    def __init__(self,in_channels,pool_channels):
+    def __init__(self,
+                 in_channels: int,
+                 pool_channels: int
+                ) -> None:
         super(InceptionA,self).__init__()
         
         self.branch1x1 = ConvBlock(in_channels= in_channels, out_channels= 64,kernel_size= 1, bias = False)
@@ -36,7 +46,9 @@ class InceptionA(nn.Module):
                                         ConvBlock(in_channels= in_channels, out_channels= pool_channels,
                                                   kernel_size= 1, bias= False))
         
-    def forward(self, x):
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         branch1 = self.branch1x1(x)
         branch2 = self.branch5x5(x)
         branch3 = self.branch3x3(x)
@@ -50,7 +62,9 @@ class InceptionA(nn.Module):
 
 
 class InceptionB(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, 
+                 in_channels: int
+                ) -> None:
         super(InceptionB,self).__init__()
         
         self.branch3x3_1 = ConvBlock(in_channels = in_channels, out_channels= 384, kernel_size= 3, stride= 2,
@@ -66,7 +80,9 @@ class InceptionB(nn.Module):
         self.poolbranch = nn.MaxPool2d(kernel_size=3, stride=2)
         
     
-    def forward(self, x):
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         branch1 = self.branch3x3_1(x)
         branch2 = self.branch3x3_2(x)
         branch3 = self.poolbranch(x)
@@ -79,7 +95,10 @@ class InceptionB(nn.Module):
 
 
 class InceptionC(nn.Module):
-    def __init__(self, in_channels, channels_7x7):
+    def __init__(self, 
+                 in_channels: int,
+                 channels_7x7: int
+                ) -> None:
         super(InceptionC, self).__init__()
         
         self.branch1x1 = ConvBlock(in_channels= in_channels, out_channels= 192, kernel_size= 1, bias=  False)
@@ -107,7 +126,9 @@ class InceptionC(nn.Module):
                                         ConvBlock(in_channels= in_channels, out_channels= 192, kernel_size= 1,
                                                  bias= False))
         
-    def forward(self, x):
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         branch1 = self.branch1x1(x)
         branch2 = self.branch7x7_1(x)
         branch3 = self.branch7x7_2(x)
@@ -119,7 +140,9 @@ class InceptionC(nn.Module):
 
 
 class InceptionD(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, 
+                 in_channels: int
+                ) -> None:
         super(InceptionD, self).__init__()
         
         self.branch3x3 = nn.Sequential(ConvBlock(in_channels= in_channels, out_channels= 192, kernel_size= 1,
@@ -140,7 +163,9 @@ class InceptionD(nn.Module):
         self.poolbranch = nn.MaxPool2d(kernel_size=3, stride=2)
         
         
-    def forward(self, x):
+    def forward(self, 
+                x : Tensor
+               ) -> None:
         branch1 = self.branch3x3(x)
         branch2 = self.branch7x7(x)
         branch3 = self.poolbranch(x)
@@ -152,7 +177,9 @@ class InceptionD(nn.Module):
 
 
 class InceptionE(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, 
+                 in_channels: int
+                ) -> None:
         super(InceptionE, self).__init__()
         
         self.branch1x1 = ConvBlock(in_channels= in_channels, out_channels= 320, kernel_size= 1, bias= False)
@@ -178,7 +205,9 @@ class InceptionE(nn.Module):
                                                  bias= False))
         
         
-    def forward(self, x):
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         branch1 = self.branch1x1(x)
         
         branch2 = self.branch3x3_1(x)
@@ -202,7 +231,10 @@ class InceptionE(nn.Module):
         return x
 
 class InceptionAux(nn.Module):
-    def __init__(self,in_channels, output_dim):
+    def __init__(self,
+                 in_channels: int, 
+                 output_dim: int
+                ) -> None:
         super(InceptionAux,self).__init__()
 
         
@@ -220,7 +252,9 @@ class InceptionAux(nn.Module):
         self.fc1.stddev = 0.001 
 
         
-    def forward(self, x):
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         x = self.avg_pool1(x)
         
         x = self.conv1(x)
@@ -236,11 +270,14 @@ class InceptionAux(nn.Module):
         
 
 class InceptionV3(nn.Module):
-    def __init__(self,image_channels, output_dim= 1000, clf= True, aux_clf=True):
+    def __init__(self,
+                 image_channels: int, 
+                 output_dim: int = 1000, 
+                 aux_clf: bool = True
+                ) -> None:
         super(InceptionV3, self).__init__()
         
         self.aux_clf= aux_clf
-        self.clf = clf
         
         self.conv1 = ConvBlock(in_channels= image_channels, out_channels= 32, kernel_size= 3,
                                stride= 2,bias = False)
@@ -277,7 +314,9 @@ class InceptionV3(nn.Module):
         
         
     
-    def forward(self,x):
+    def forward(self,
+                x: Tensor
+               ) -> Tuple[Tensor]:
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
@@ -307,10 +346,10 @@ class InceptionV3(nn.Module):
         x = self.inception_e_2(x)
         x = self.avg_pool1(x)
 
-        if self.clf:
-            x = self.dropout(x)
-            x = torch.flatten(x,1)
-            x = self.fc1(x)
+
+        x = self.dropout(x)
+        x = torch.flatten(x,1)
+        x = self.fc1(x)
         
         if self.aux_clf:
             return x, x_aux
@@ -322,5 +361,12 @@ class InceptionV3(nn.Module):
         
         
 
-def inceptionv3(imag_channels:int = 3, output_dim:int = 1000,clf:bool =True, aux_clf: bool =True) -> InceptionV3:
-    return InceptionV3(image_channels= imag_channels, output_dim= output_dim, clf= clf, aux_clf= aux_clf)
+def inceptionv3(imag_channels:int = 3, 
+                output_dim:int = 1000, 
+                aux_clf: bool =True
+               ) -> InceptionV3:
+    
+    return InceptionV3(image_channels=imag_channels, 
+                       output_dim=output_dim, 
+                       aux_clf= aux_clf
+                       )

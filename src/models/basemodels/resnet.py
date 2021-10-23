@@ -23,32 +23,29 @@ class ConvBlock(nn.Module):
         for more info: see nn.Conv2d and nn.BatchNorm2d documentation
     """        
 
-    def __init__(
-        self,
-        **kwargs
-        ) -> None:   
+    def __init__(self,
+                 **kwargs
+                ) -> None:   
         super(ConvBlock,self).__init__()
         
         self.block = nn.Sequential(nn.Conv2d(**kwargs,),
                                    nn.BatchNorm2d(kwargs['out_channels']))
     
-    def forward(
-        self,
-        x: Tensor
-        ) -> Tensor:
+    def forward(self,
+                x: Tensor
+                ) -> Tensor:
         x = self.block(x)
         return x
 
 
 class BasicBlock(nn.Module):
     expansion = 1
-    def __init__(
-        self, 
-        in_channels: int, 
-        out_channels: int, 
-        stride: int = 1 ,
-        downsample: bool = False
-        ) -> None:
+    def __init__(self, 
+                 in_channels: int, 
+                 out_channels: int, 
+                 stride: int = 1 ,
+                 downsample: bool = False
+                ) -> None:
         super(BasicBlock,self).__init__()
         
         self.conv1 = ConvBlock(in_channels=in_channels, out_channels=out_channels, stride=stride,
@@ -66,10 +63,9 @@ class BasicBlock(nn.Module):
             self.downsample = None
             
         
-    def forward(
-        self, 
-        x: Tensor
-        ) -> Tensor:
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         identity = x
         x = self.conv1(x)
         x = self.relu(x)
@@ -86,13 +82,12 @@ class BasicBlock(nn.Module):
 class Bottleneck(nn.Module):
     
     expansion = 4
-    def __init__(
-        self,
-        in_channels: int, 
-        out_channels: int, 
-        stride: int = 1, 
-        downsample: bool = False
-        ) -> None:
+    def __init__(self,
+                 in_channels: int, 
+                 out_channels: int, 
+                 stride: int = 1, 
+                 downsample: bool = False
+                ) -> None:
         super(Bottleneck,self).__init__()
         
         self.conv1 = ConvBlock(in_channels=in_channels, out_channels=out_channels, stride=1,
@@ -114,10 +109,9 @@ class Bottleneck(nn.Module):
             self.downsample = None
             
     
-    def forward(
-        self,
-        x: Tensor
-        ) -> Tensor:
+    def forward(self,
+                x: Tensor
+               ) -> Tensor:
         
         identity = x
         x = self.conv1(x)
@@ -136,19 +130,16 @@ class Bottleneck(nn.Module):
     
 
 class ResNet(nn.Module):
-    def __init__(
-        self,
-        config: NamedTuple , 
-        output_dim: int = 10, 
-        clf: bool = True,
-        image_channels: int = 3
-        ) -> None:
+    def __init__(self,
+                 config: NamedTuple , 
+                 output_dim: int = 10, 
+                 image_channels: int = 3
+                ) -> None:
         super(ResNet, self).__init__()
     
         block, n_blocks, channels = config
         self.image_channels= image_channels
         self.output_dim = output_dim
-        self.clf = clf
         self.in_channels = channels[0]
     
         assert len(n_blocks) == len(channels) == 4
@@ -169,10 +160,9 @@ class ResNet(nn.Module):
     
     
     
-    def forward(
-        self, 
-        x : Tensor
-        ) -> Tensor:
+    def forward(self, 
+                x : Tensor
+               ) -> Tensor:
         
         x = self.conv1(x)
         x = self.relu(x)
@@ -182,22 +172,19 @@ class ResNet(nn.Module):
         x = self.conv4_x(x)
         x = self.conv5_x(x)
         x = self.avgpool(x)
-        
-        if self.clf:
-            x = x.view(x.shape[0], -1)
-            x = self.fc(x)
+        x = x.view(x.shape[0], -1)
+        x = self.fc(x)
         
         return x
     
     
     
-    def _make_layer(
-        self,
-        block: Callable, 
-        n_blocks: int, 
-        channels: int, 
-        stride: int = 1
-        ) -> nn.Module:
+    def _make_layer(self,
+                    block: Callable, 
+                    n_blocks: int, 
+                    channels: int, 
+                    stride: int = 1
+                   ) -> nn.Module:
         
         layers = []
         if self.in_channels != block.expansion * channels:
@@ -218,7 +205,9 @@ class ResNet(nn.Module):
 
 
 
-ResNetConfig = namedtuple('ResNetConfig', ['block', 'n_blocks', 'channels'])
+ResNetConfig = namedtuple('ResNetConfig', 
+                         ['block', 'n_blocks', 'channels']
+                         )
 
 
 resnet18_config = ResNetConfig(block = BasicBlock,
@@ -242,53 +231,66 @@ resnet152_config = ResNetConfig(block = Bottleneck,
                                 channels = [64, 128, 256, 512])
 
 
-def resnet18(
-    output_dim: int = 1000,
-    image_channels: int =3,
-    clf:bool = True
-    ) -> ResNet:
+
+def resnet18(output_dim: int = 1000,
+             image_channels: int =3,
+            ) -> ResNet:
 
     config = resnet18_config
     
-    return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
+    return ResNet(config, 
+                  output_dim=output_dim, 
+                  image_channels=image_channels
+                  )
 
-def resnet34(
-    output_dim: int = 1000,
-    image_channels: int = 3,
-    clf:bool = True
-    ) -> ResNet:
+
+
+def resnet34(output_dim: int = 1000,
+             image_channels: int = 3,
+            ) -> ResNet:
 
     config = resnet34_config
 
-    return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
+    return ResNet(config,
+                  output_dim=output_dim,
+                  image_channels=image_channels
+                  )
 
 
-def resnet50(
-    output_dim: int = 1000,
-    image_channels: int = 3, 
-    clf:bool = True
-    ) -> ResNet:
+
+def resnet50(output_dim: int = 1000,
+             image_channels: int = 3, 
+            ) -> ResNet:
 
     config = resnet50_config
 
-    return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
+    return ResNet(config,
+                  output_dim=output_dim,
+                  image_channels=image_channels
+                  )
 
-def resnet101(
-    output_dim: int = 1000,
-    image_channels: int = 3, 
-    clf:bool = True
-    ) -> ResNet:
+
+
+def resnet101(output_dim: int = 1000,
+              image_channels: int = 3, 
+             ) -> ResNet:
     
     config = resnet101_config
     
-    return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
+    return ResNet(config, 
+                  output_dim=output_dim,
+                  image_channels=image_channels
+                  )
 
-def resnet152(
-    output_dim: int = 1000,
-    image_channels: int = 3,
-    clf:bool = True
-    ) -> ResNet:
+
+
+def resnet152(output_dim: int = 1000,
+              image_channels: int = 3,
+             ) -> ResNet:
     
     config = resnet152_config
     
-    return ResNet(config,output_dim=output_dim,clf= clf,image_channels=image_channels)
+    return ResNet(config,
+                  output_dim=output_dim, 
+                  image_channels=image_channels
+                  )

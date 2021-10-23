@@ -1,10 +1,15 @@
 
-import torch 
+from typing import List
+import torch
+from torch import tensor 
 import torch.nn as nn
+from torch.tensor import Tensor
 
 
 class Bottleneck(nn.Module):
-    def __init__(self,in_channels, growth_rate):
+    def __init__(self, 
+                 in_channels: int, 
+                 growth_rate: int) -> None:
         super(Bottleneck,self).__init__()
         
         inner_channels = 4 * growth_rate
@@ -19,15 +24,22 @@ class Bottleneck(nn.Module):
                                         nn.Conv2d(in_channels= inner_channels, out_channels= growth_rate,
                                                   kernel_size= 3, padding= 1, bias= False))
         
-    def forward(self,x):
-        return self.concat(x)
+    def forward(self,
+                x: Tensor
+                ) -> Tensor:
+        return self._concat(x)
     
-    def concat(self,x):
+    def _concat(self,
+                x: Tensor
+                ) -> Tensor:
         return torch.cat([x, self.bottleneck(x)],1)
 
 
 class TransitionBlock(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, 
+                 in_channels, 
+                 out_channels
+                ) -> None:
         super(TransitionBlock, self).__init__()
         
         self.transition = nn.Sequential(nn.BatchNorm2d(in_channels), 
@@ -35,13 +47,19 @@ class TransitionBlock(nn.Module):
                               nn.Conv2d(in_channels= in_channels, out_channels= out_channels,
                                                   kernel_size= 1, stride= 1,bias= False),
                               nn.AvgPool2d(kernel_size= 3, stride= 2, padding=0))
-    def forward(self, x):
+    def forward(self,
+                x: Tensor
+               ) -> Tensor:
         return self.transition(x)
 
 
 
 class DenseBlock(nn.Module):
-    def __init__(self,inner_channels, n_layers,growth_rate):
+    def __init__(self,
+                 inner_channels: int, 
+                 n_layers: int,
+                 growth_rate: int
+                 ) -> None:
         super(DenseBlock,self).__init__()
         
         self.growth_rate = growth_rate
@@ -50,11 +68,16 @@ class DenseBlock(nn.Module):
         
         self.denseblock = self._make_layer(self.n_layers,self.growth_rate)
         
-    def forward(self,x):
+    def forward(self,
+                x: Tensor
+               ) -> Tensor:
         return self.denseblock(x)
     
     
-    def _make_layer(self,n_layers, growth_rate):
+    def _make_layer(self, 
+                    n_layers: int,
+                    growth_rate: int
+                   ) -> nn.Module:
         
         layers = []
 
@@ -69,16 +92,19 @@ class DenseBlock(nn.Module):
 
 
 class DenseNet(nn.Module):
-    def __init__(self, config ,growth_rate= 32, image_channels= 3, compression= 0.5, 
-                 clf= True, output_dim= 1000):
+    def __init__(self, 
+                 config: List,
+                 growth_rate: int = 32,
+                 image_channels: int = 3,
+                 compression: float = 0.5, 
+                 output_dim: int = 1000
+                 ) -> None:
         super(DenseNet, self).__init__()
         
         n_layers = config
-        #assert len(n_layers) == 4
         
         self.image_channels = image_channels
         self.output_dim = output_dim
-        self.clf = clf
         self.growth_rate = growth_rate
         self.compression = compression
         
@@ -135,10 +161,8 @@ class DenseNet(nn.Module):
         x = self.block4(x)
         x = self.norm5(x)
         x = self.averag_pool(x)
-        
-        if self.clf:
-            x = x.view(x.shape[0], -1)
-            x = self.fc(x)
+        x = x.view(x.shape[0], -1)
+        x = self.fc(x)
     
         return x
 
@@ -154,14 +178,43 @@ densenet201_config = [6,12,48,32]
 densenet264_config = [6,12,64,48]
 
 
-def densenet121(output_dim :int = 1000,image_channels :int = 3, clf:bool = True) -> DenseNet:
-    return DenseNet(config=densenet121_config, output_dim= output_dim, image_channels= image_channels, clf= clf)
 
-def densenet169(output_dim :int = 1000,image_channels :int = 3, clf:bool = True) -> DenseNet:
-    return DenseNet(config=densenet169_config, output_dim= output_dim, image_channels= image_channels, clf= clf)
+def densenet121(output_dim: int = 1000, 
+                image_channels :int = 3
+               ) -> DenseNet:
+    
+    return DenseNet(config=densenet121_config, 
+                    output_dim=output_dim, 
+                    image_channels=image_channels
+                    )
 
-def densenet201(output_dim :int = 1000,image_channels :int = 3, clf:bool = True) -> DenseNet:
-    return DenseNet(config=densenet201_config, output_dim= output_dim, image_channels= image_channels, clf= clf)
 
-def densenet264(output_dim :int = 1000,image_channels :int = 3, clf:bool = True) -> DenseNet:
-    return DenseNet(config=densenet264_config, output_dim= output_dim, image_channels= image_channels, clf= clf)
+
+def densenet169(output_dim: int = 1000,
+                image_channels :int = 3
+               ) -> DenseNet:
+
+    return DenseNet(config=densenet169_config, 
+                    output_dim=output_dim, 
+                    image_channels=image_channels
+                   )
+
+
+
+def densenet201(output_dim: int = 1000,
+                image_channels: int = 3
+               ) -> DenseNet:
+    
+    return DenseNet(config=densenet201_config, 
+                    output_dim=output_dim, 
+                    image_channels=image_channels
+                   )
+
+def densenet264(output_dim: int = 1000,
+                image_channels: int = 3
+               ) -> DenseNet:
+    
+    return DenseNet(config=densenet264_config,
+                    output_dim=output_dim, 
+                    image_channels=image_channels
+                   )

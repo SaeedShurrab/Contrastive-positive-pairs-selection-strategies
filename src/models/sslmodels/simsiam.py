@@ -79,7 +79,9 @@ class ProjectionMLP(nn.Module):
                                     nn.BatchNorm1d(hidden_dim)
                                    )
     
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
@@ -126,7 +128,9 @@ class EncodProject(nn.Module):
                                        hidden_dim=hidden_dim,
                                        output_dim=output_dim
                                        )
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         x = self.encoder(x)
         x = torch.flatten(x, 1)
         x = self.projector(x)
@@ -155,7 +159,7 @@ class SimSiam(nn.Module):
     def forward(self, 
                 x1: Tensor,
                 x2: Tensor
-               ) -> Tuple[Tensor]:
+               ) -> Dict[Tensor]:
         
         f, h = self.encode_project, self.predictor
         z1, z2 = f(x1), f(x2)

@@ -22,7 +22,10 @@ class MLP(nn.Module):
         
         )
     
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
+        
         return self.mlp(x)
 
 
@@ -88,7 +91,9 @@ class EncodProject(nn.Module):
                              projection_dim=projection_out_dim,
                              hidden_dim= hidden_dim)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, 
+                x: Tensor
+               ) -> Tensor:
         x = self.encoder(x)
         x = torch.flatten(x, 1)
         x = self.projector(x)
@@ -100,8 +105,7 @@ class BYOL(nn.Module):
                  model: nn.Module,
                  hidden_dim: int = 4096,
                  projection_out_dim: int = 256,
-                 target_decay: float = 0.99
-                 
+                 target_decay: float = 0.99  
                 ) -> None:
         super(BYOL, self).__init__()
         
