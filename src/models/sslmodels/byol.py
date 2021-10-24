@@ -2,9 +2,13 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
+import pytorch_lightning as pl
 
 from torch import Tensor
 from typing import *
+
+from torch.optim import lr_scheduler
 
 
 class MLP(nn.Module):
@@ -32,9 +36,7 @@ class MLP(nn.Module):
 
 class NormalizedMSELoss(nn.Module):
     def __init__(self) -> None:
-        super(NormalizedMSELoss,self).__init__()
-        
-        
+        super(NormalizedMSELoss,self).__init__()   
         
     def _forward(self, 
                  view1: Tensor , 
@@ -168,3 +170,90 @@ class BYOL(nn.Module):
                 
         
         
+
+
+class ByolModel(pl.LightningModule):
+    def __init__(self,
+                backbone: nn.Module,
+                criterion: nn.Module = NormalizedMSELoss,
+                target_decay: float = 0.996,
+                optimizer: str = 'sgd',
+                learning_rate: float =  1e-2,
+                weight_decay: float = 0.0,
+                scheduler: str = 'step',
+                sched_step_size: int = 5,
+                shced_gamm: float = 0.5
+                ) -> None:
+        super(ByolModel, self).__init__()
+
+        self.save_hyperparameters()
+        self.backbone = backbone()
+        self.learner = BYOL(model=self.backbone, target_decay=target_decay)
+        self.criterion = criterion()
+        self.optimizer = optimizer.lower()
+        self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
+        self.scheduler = scheduler
+        self.sched_step_size = sched_step_size
+        self.sched_gamma = shced_gamm
+
+    def training_step(self, 
+                      batch: List[Tensor], 
+                      batch_idx: int
+                     ) -> float:
+        view1, view2 = batch
+        v1_on, v2_tar, v2_on, v1_tar = self.learner(view1,view2)
+        loss = self.criterion(v1_on, v2_tar, v2_on, v1_tar)
+        
+        # logging
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True,)
+        return loss
+
+    def on_before_zero_grad(self,_) -> None:
+        self.learner.update_target_network()
+
+
+    def configure_optimizers(self):
+        if self.optimizer == 'adam':
+            optimizer = optim.Adam(params=self.learner.parameters(), 
+                                   lr=self.learning_rate, 
+                                   weight_decay=self.weight_decay
+                                   )
+        elif self.optimizer == 'sgd':
+            optimizer = optim.Adam(params=self.learner.parameters(), 
+                                   lr=self.learning_rate, 
+                                   weight_decay=self.weight_decay
+                                   )
+        else:
+            raise NameError('optimizer must be eithr sgd or adam')
+
+
+        if self.scheduler == 'step':
+            scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, 
+                                                  step_size=self.sched_step_size,
+                                                  gamma=self.sched_gamma
+                                                 )
+        elif self.scheduler == 'exponential':
+             scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, 
+                                                          gamma=self.sched_gamma
+                                                         )  
+
+        else: 
+            raise NameError('scheduler must be eithr step or exponential')
+        
+        return{'optimizer': optimizer,
+               'schedular': scheduler
+              }
+
+
+        
+
+
+
+
+
+
+    
+
+    
+

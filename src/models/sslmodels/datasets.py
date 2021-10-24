@@ -76,21 +76,27 @@ class UnrestrictedOCT(Dataset):
 
 
 class UnristrictedDataLoader(pl.LightningDataModule): 
-    def __ini__(self,
+    def __init__(self,
                 data_dir: str,
                 transforms: Optional[T.Compose] = None,
-                batch_size: int = 128
+                batch_size: int = 128,
+                num_workers: int = 8,
+                pin_memory: bool = True 
                 ) -> None:
         
         self.data_dir = data_dir
         self.transforms = transforms
         self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.pin_memory = pin_memory
 
     def setup(self, stage: Optional[str] = None):
         self.train_dataset = UnrestrictedOCT(data_dir=self.data_dir, transforms=self.transforms)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size,shuffle=True)
+        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size,
+                          shuffle=True, num_workers=self.num_workers, pin_memory= self.pin_memory
+                         )
 
 
 
@@ -166,19 +172,25 @@ class XYRetinaDataLoader(pl.LightningDataModule):
     def __init__(self,
                 data_dir: str,
                 transforms: Optional[T.Compose] = None,
-                batch_size: int = 128
+                batch_size: int = 128,
+                num_workers: int = 8,
+                pin_memory: bool = True 
                 ) -> None:
         super(XYRetinaDataLoader, self).__init__()
         
         self.data_dir = data_dir
         self.transforms = transforms
         self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.pin_memory = pin_memory
 
     def setup(self, stage: Optional[str] = None):
         self.train_dataset = XYRetinaOCT(data_dir=self.data_dir, transforms=self.transforms)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size,shuffle=True)
+        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size,
+                          shuffle=True, num_workers=self.num_workers, pin_memory= self.pin_memory
+                         )
 
 
 
@@ -296,16 +308,22 @@ class ConsicutiveSessionsDataLoader(pl.LightningDataModule):
     def __init__(self,
                 data_dir: str,
                 transforms: Optional[T.Compose] = None,
-                batch_size: int = 128
+                batch_size: int = 128,
+                num_workers: int = 8,
+                pin_memory: bool = True 
                 ) -> None:
         super(ConsicutiveSessionsDataLoader, self).__init__()
         
         self.data_dir = data_dir
         self.transforms = transforms
         self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.pin_memory = pin_memory
 
     def setup(self, stage: Optional[str] = None):
         self.train_dataset = ConsecutiveSessionsOCT(data_dir=self.data_dir, transforms=self.transforms)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size,shuffle=True)
+        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size,
+                          shuffle=True, num_workers=self.num_workers, pin_memory= self.pin_memory
+                         )
