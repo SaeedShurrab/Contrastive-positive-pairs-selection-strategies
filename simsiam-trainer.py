@@ -3,9 +3,8 @@ import argparse
 import pytorch_lightning as pl
 
 from pytorch_lightning.loggers import MLFlowLogger
-from torch.utils.data.dataloader import DataLoader
 from torchvision.models import resnet
-from src.models.sslmodels.byol import ByolModel, NormalizedMSELoss
+from src.models.sslmodels.simsiam import SimSiamModel, NegativeCosineSimilarity
 from src.models.sslmodels.datasets import UnrestrictedDataLoader
 from src.models.sslmodels.datasets import XYRetinaDataLoader
 from src.models.sslmodels.datasets import ConsicutiveSessionsDataLoader
@@ -50,9 +49,6 @@ parser.add_argument('--backbone', '--bb',type=str, default='resnet50',
                     metavar='BACKBONE', help='model backbone | ' + \
                     'backbones: ('+  ', '.join(model_names) +') \
                     | default: (resnet50)' 
-                   )
-parser.add_argument('--target-decay','--td', type=float, default=0.996, metavar='TD',
-                    help='target network decay factor  | default: (0.996)'
                    )
 parser.add_argument('-o','--optimizer', type=str, default='sgd', 
                     choices=['Adam','adam', 'SGD', 'sgd'],
@@ -117,16 +113,15 @@ elif args.strategy == 'consecutive':
                                                )
 
 
-model = ByolModel(backbone=models.__dict__[args.backbone],
-                  criterion=NormalizedMSELoss,
-                  target_decay=args.target_decay,
-                  optimizer=args.optimizer,
-                  learning_rate=args.learning_rate,
-                  weight_decay=args.weight_decay,
-                  scheduler=args.scheduler,
-                  sched_step_size=args.scheduler_step,
-                  sched_gamma=args.scheduler_gamma,
-                 )
+model = SimSiamModel(backbone=models.__dict__[args.backbone],
+                     criterion=NegativeCosineSimilarity,
+                     optimizer=args.optimizer,
+                     learning_rate=args.learning_rate,
+                     weight_decay=args.weight_decay,
+                     scheduler=args.scheduler,
+                     sched_step_size=args.scheduler_step,
+                     sched_gamma=args.scheduler_gamma,
+                    )
 
 
 checkpoint_callback = ModelCheckpoint(monitor="val_loss", mode="min")
@@ -142,9 +137,3 @@ trainer = pl.Trainer(gpus=args.ngpus, logger=mlflow_logger, max_epochs=args.epoc
 #    print(args)
 
 print(args)
-
-
-
-
-
-

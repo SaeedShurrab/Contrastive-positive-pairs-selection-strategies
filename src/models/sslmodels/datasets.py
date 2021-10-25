@@ -28,7 +28,7 @@ specific_transforms = T.Compose([T.Resize((224,224)),
 class UnrestrictedOCT(Dataset):
     def __init__(self, 
                  data_dir: str, 
-                 transforms: Optional[T.Compose] = None
+                 transforms: Optional[T.Compose]
                 ) -> None:
         
         self.transforms = transforms
@@ -75,10 +75,10 @@ class UnrestrictedOCT(Dataset):
 
 
 
-class UnristrictedDataLoader(pl.LightningDataModule): 
+class UnrestrictedDataLoader(pl.LightningDataModule): 
     def __init__(self,
                 data_dir: str,
-                transforms: Optional[T.Compose] = None,
+                transforms: Optional[T.Compose],
                 batch_size: int = 128,
                 num_workers: int = 8,
                 pin_memory: bool = True 
@@ -106,7 +106,7 @@ class UnristrictedDataLoader(pl.LightningDataModule):
 class XYRetinaOCT(Dataset):
     def __init__(self, 
                  data_dir: str, 
-                 transforms: Optional[T.Compose] = None
+                 transforms: Optional[T.Compose]
                 ) -> None:
         self.data_dir = data_dir
         self.transforms = transforms
@@ -171,7 +171,7 @@ class XYRetinaOCT(Dataset):
 class XYRetinaDataLoader(pl.LightningDataModule): 
     def __init__(self,
                 data_dir: str,
-                transforms: Optional[T.Compose] = None,
+                transforms: Optional[T.Compose],
                 batch_size: int = 128,
                 num_workers: int = 8,
                 pin_memory: bool = True 
@@ -199,7 +199,7 @@ class XYRetinaDataLoader(pl.LightningDataModule):
 class ConsecutiveSessionsOCT(Dataset):
     def __init__(self, 
                  data_dir: str, 
-                 transforms: Optional[T.Compose] = None
+                 transforms: Optional[T.Compose]
                 ) -> None:
         
         self.transforms = transforms
@@ -307,7 +307,7 @@ class ConsecutiveSessionsOCT(Dataset):
 class ConsicutiveSessionsDataLoader(pl.LightningDataModule): 
     def __init__(self,
                 data_dir: str,
-                transforms: Optional[T.Compose] = None,
+                transforms: Optional[T.Compose],
                 batch_size: int = 128,
                 num_workers: int = 8,
                 pin_memory: bool = True 

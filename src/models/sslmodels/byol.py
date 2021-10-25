@@ -182,7 +182,7 @@ class ByolModel(pl.LightningModule):
                 weight_decay: float = 0.0,
                 scheduler: str = 'step',
                 sched_step_size: int = 5,
-                shced_gamm: float = 0.5
+                sched_gamma: float = 0.5
                 ) -> None:
         super(ByolModel, self).__init__()
 
@@ -195,7 +195,7 @@ class ByolModel(pl.LightningModule):
         self.weight_decay = weight_decay
         self.scheduler = scheduler
         self.sched_step_size = sched_step_size
-        self.sched_gamma = shced_gamm
+        self.sched_gamma = sched_gamma
 
     def training_step(self, 
                       batch: List[Tensor], 

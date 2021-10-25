@@ -1,9 +1,9 @@
 
 from typing import List
 import torch
-from torch import tensor 
+
 import torch.nn as nn
-from torch.tensor import Tensor
+from torch import Tensor
 
 
 class Bottleneck(nn.Module):

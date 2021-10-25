@@ -1,6 +1,5 @@
 from typing import Tuple
 import torch
-from torch import tensor 
 import torch.nn as nn
 from torch import Tensor
 
