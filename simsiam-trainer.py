@@ -21,6 +21,7 @@ model_names = sorted(name for name in models.__dict__
 
 parser = argparse.ArgumentParser(description='BYOL training command line interface')
 
+# training mode option
 parser.add_argument('-s','--strategy', type=str, default='unrestricted', 
                     choices=['unrestricted', 'xyscans', 'consecutive'],
                     metavar='TRAINING-PLAN', help='positive pairs selection strategy | \
@@ -28,7 +29,7 @@ parser.add_argument('-s','--strategy', type=str, default='unrestricted',
                     | default: (unrestricted)' 
                    )
 
-# data loading arguments
+# data loading options
 parser.add_argument('-d','--data-dir', type=str, 
                     default=os.path.join(os.curdir,'data','pretext'),
                     metavar='DIR', help='path to the training data | default: (./data/pretext)'
@@ -43,7 +44,7 @@ parser.add_argument('-m', '--pin-memory', type=bool, default=True, metavar='N',
                     help='number of data loading workers | default: (8)'
                    )
 
-# model arguments
+# model options
 parser.add_argument('--backbone', '--bb',type=str, default='resnet50', 
                     choices=model_names,
                     metavar='BACKBONE', help='model backbone | ' + \
@@ -73,7 +74,7 @@ parser.add_argument('--scheduler-gamma','--sg', type=float, default=0.5, metavar
                     help='learrning rate reduction factor | default: (0.5)'
                    )                    
 
-# trainer arguments 
+# trainer options
 parser.add_argument('-g','--ngpus', type=int, default=-1, metavar='N',
                     help='total number of gpus used during training  | default: (-1)'
                    )
@@ -83,6 +84,9 @@ parser.add_argument('-e','--epochs', type=int, default=100, metavar='N',
 parser.add_argument('-p','--precision', type=int, default=16, metavar='N',
                     help='auotomatic mexed precesion mode applied during the training  | default: (16)'
                    )
+
+# logger options
+parser.add_argument('--experiment-name','--en', type=str, default=[args.strategy, 'V1'], nargs=2)
 
 args = parser.parse_args()
 
@@ -124,14 +128,7 @@ model = SimSiamModel(backbone=models.__dict__[args.backbone],
                     )
 
 
-checkpoint_callback = ModelCheckpoint(monitor="val_loss", mode="min")
-mlflow_logger = MLFlowLogger(experiment_name='test',save_dir='logs')
-lr_logger = LearningRateMonitor(logging_interval='epoch',)
-early_stop = EarlyStopping(monitor="train_loss", min_delta=0.001, mode="min", patience=5,)
 
-trainer = pl.Trainer(gpus=args.ngpus, logger=mlflow_logger, max_epochs=args.epochs,
-                     callbacks=[checkpoint_callback, lr_logger, early_stop],
-                     precision=args.precision)
 
 #if __name__ == '__main__':
 #    print(args)

@@ -133,7 +133,7 @@ class ResNet(nn.Module):
     def __init__(self,
                  config: NamedTuple , 
                  output_dim: int = 10, 
-                 image_channels: int = 3
+                 image_channels: int = 1
                 ) -> None:
         super(ResNet, self).__init__()
     
@@ -233,7 +233,7 @@ resnet152_config = ResNetConfig(block = Bottleneck,
 
 
 def resnet18(output_dim: int = 1000,
-             image_channels: int =3,
+             image_channels: int =1,
             ) -> ResNet:
 
     config = resnet18_config
