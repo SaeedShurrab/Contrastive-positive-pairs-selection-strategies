@@ -2,7 +2,7 @@
 
 import torch 
 import torch.nn as nn
-from torch.tensor import Tensor
+from torch import Tensor
 from typing import Tuple
 
 
@@ -203,7 +203,7 @@ class GoogleNet(nn.Module):
 
 
 
-def googlenet(imag_channels:int = 3,
+def googlenet(imag_channels:int = 1,
               output_dim:int = 1000, 
               aux_clf: bool =True
              ) -> GoogleNet:

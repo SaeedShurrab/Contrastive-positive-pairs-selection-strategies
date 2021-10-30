@@ -1,7 +1,7 @@
 import os
 from typing import Optional, Tuple, List, Iterable
 import torch
-from torch.tensor import Tensor
+from torch import Tensor
 import torchvision.transforms as T
 
 from PIL import Image
@@ -12,10 +12,10 @@ import pytorch_lightning as pl
 defualt_transforms = T.Compose([T.Resize((224,224)),
                                 T.RandomApply([T.RandomRotation(degrees=(10)), 
                                                T.RandomAffine(degrees=0, shear=10, scale=(1,1))], p=1),
-                                T.Normalize(mean=torch.tensor([0.1115]), # Rememebr to calculate and update
-                                            std=torch.tensor([0.1372])), # Rememebr to calculate and update
                                 T.RandomHorizontalFlip(p=0.5),
-                                T.ToTensor()
+                                T.ToTensor(),
+                                T.Normalize(mean=torch.tensor([0.1115]), # Rememebr to calculate and update
+                                            std=torch.tensor([0.1372])) # Rememebr to calculate and update
                         ])
 
 
@@ -83,7 +83,7 @@ class UnrestrictedDataLoader(pl.LightningDataModule):
                 num_workers: int = 8,
                 pin_memory: bool = True 
                 ) -> None:
-        
+        super(UnrestrictedDataLoader,self).__init__()
         self.data_dir = data_dir
         self.transforms = transforms
         self.batch_size = batch_size

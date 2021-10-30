@@ -161,7 +161,7 @@ class SimSiam(nn.Module):
     def forward(self, 
                 x1: Tensor,
                 x2: Tensor
-               ) -> Tensor:
+               ) -> Dict[str, Tensor]:
         
         f, h = self.encode_project, self.predictor
         z1, z2 = f(x1), f(x2)
@@ -209,7 +209,7 @@ class SimSiamModel(pl.LightningModule):
         loss = self.criterion(p1, p2, z1, z2)
         
         # logging
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True,)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss
 
 
@@ -221,7 +221,7 @@ class SimSiamModel(pl.LightningModule):
                                    weight_decay=self.weight_decay
                                    )
         elif self.optimizer == 'sgd':
-            optimizer = optim.Adam(params=self.learner.parameters(), 
+            optimizer = optim.SGD(params=self.learner.parameters(), 
                                    lr=self.learning_rate, 
                                    weight_decay=self.weight_decay
                                    )
@@ -243,5 +243,5 @@ class SimSiamModel(pl.LightningModule):
             raise NameError('scheduler must be eithr step or exponential')
         
         return{'optimizer': optimizer,
-               'schedular': scheduler
+               'lr_scheduler': scheduler
               }

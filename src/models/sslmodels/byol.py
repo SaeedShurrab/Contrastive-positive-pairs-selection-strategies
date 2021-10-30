@@ -1,4 +1,7 @@
+import os
 import copy
+from logging import Logger
+import mlflow
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,7 +11,7 @@ import pytorch_lightning as pl
 from torch import Tensor
 from typing import *
 
-from torch.optim import lr_scheduler
+
 
 
 class MLP(nn.Module):
@@ -107,7 +110,7 @@ class BYOL(nn.Module):
                  model: nn.Module,
                  hidden_dim: int = 4096,
                  projection_out_dim: int = 256,
-                 target_decay: float = 0.99  
+                 target_decay: float = 0.996 
                 ) -> None:
         super(BYOL, self).__init__()
         
@@ -124,14 +127,16 @@ class BYOL(nn.Module):
         self._set_requieres_grad(self.target_network, False)
         
         self.moving_average_updater = EMA(target_decay=target_decay)
-
+        
     
     def _set_requieres_grad(self,
                             model: nn.Module,
                             grad: bool = False
                            ) -> None:
-        for param in model.parameters():
-            param.requires_grad = grad
+        for name, child in model.named_children():
+            for param in child.parameters():
+                param.requires_grad = grad
+            self._set_requieres_grad(child, grad)
           
     @torch.no_grad()    
     def update_target_network(self) -> None:
@@ -180,7 +185,7 @@ class ByolModel(pl.LightningModule):
                 optimizer: str = 'sgd',
                 learning_rate: float =  1e-2,
                 weight_decay: float = 0.0,
-                scheduler: str = 'step',
+                scheduler: Optional[str] = 'step',
                 sched_step_size: int = 5,
                 sched_gamma: float = 0.5
                 ) -> None:
@@ -205,13 +210,14 @@ class ByolModel(pl.LightningModule):
         v1_on, v2_tar, v2_on, v1_tar = self.learner(view1,view2)
         loss = self.criterion(v1_on, v2_tar, v2_on, v1_tar)
         
-        # logging
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True,)
+        self.log("train_loss", loss, on_epoch= True,on_step=True ,prog_bar=True, logger=True)
         return loss
 
-    def on_before_zero_grad(self,_) -> None:
-        self.learner.update_target_network()
+ 
 
+    def on_before_zero_grad(self, _) -> None:
+        self.learner.update_target_network()
+    
 
     def configure_optimizers(self):
         if self.optimizer == 'adam':
@@ -220,7 +226,7 @@ class ByolModel(pl.LightningModule):
                                    weight_decay=self.weight_decay
                                    )
         elif self.optimizer == 'sgd':
-            optimizer = optim.Adam(params=self.learner.parameters(), 
+            optimizer = optim.SGD(params=self.learner.parameters(), 
                                    lr=self.learning_rate, 
                                    weight_decay=self.weight_decay
                                    )
@@ -231,29 +237,18 @@ class ByolModel(pl.LightningModule):
         if self.scheduler == 'step':
             scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, 
                                                   step_size=self.sched_step_size,
-                                                  gamma=self.sched_gamma
+                                                  gamma=self.sched_gamma, verbose=True
                                                  )
         elif self.scheduler == 'exponential':
              scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, 
-                                                          gamma=self.sched_gamma
+                                                          gamma=self.sched_gamma, verbose=True
                                                          )  
+        elif self.scheduler is None:
+            scheduler = None
 
         else: 
             raise NameError('scheduler must be eithr step or exponential')
         
-        return{'optimizer': optimizer,
-               'schedular': scheduler
-              }
-
-
-        
-
-
-
-
-
-
-    
-
-    
-
+        return {'optimizer': optimizer,
+                'lr_scheduler': scheduler
+               }

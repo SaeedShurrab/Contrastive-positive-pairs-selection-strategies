@@ -360,7 +360,7 @@ class InceptionV3(nn.Module):
         
         
 
-def inceptionv3(imag_channels:int = 3, 
+def inceptionv3(imag_channels:int = 1, 
                 output_dim:int = 1000, 
                 aux_clf: bool =True
                ) -> InceptionV3:
