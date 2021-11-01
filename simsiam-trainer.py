@@ -7,9 +7,9 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import MLFlowLogger
 from torchvision.models import resnet
 from src.models.sslmodels.simsiam import SimSiamModel, NegativeCosineSimilarity
-from src.data.pretext.datasets import UnrestrictedDataLoader
-from src.data.pretext.datasets import XYRetinaDataLoader
-from src.data.pretext.datasets import ConsicutiveSessionsDataLoader
+from src.data.pretext.datasets import UnrestrictedDataModule
+from src.data.pretext.datasets import XYScansDataModule
+from src.data.pretext.datasets import ConsicutiveSessionsDataModule
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
 import src.models.basemodels as models
 
@@ -118,7 +118,7 @@ args = parser.parse_args()
 
 
 if args.strategy == 'unrestricted':
-    data_module = UnrestrictedDataLoader(data_dir=args.data_dir,
+    data_module = UnrestrictedDataModule(data_dir=args.data_dir,
                                          transforms=None,
                                          batch_size=args.batch_size,
                                          num_workers=args.num_workers,
@@ -126,7 +126,7 @@ if args.strategy == 'unrestricted':
                                         )
 
 elif args.strategy == 'xyscans':
-    data_module = XYRetinaDataLoader(data_dir=args.data_dir,
+    data_module = XYScansDataModule(data_dir=args.data_dir,
                                      transforms=None,
                                      batch_size=args.batch_size,
                                      num_workers=args.num_workers,
@@ -135,7 +135,7 @@ elif args.strategy == 'xyscans':
 
 
 elif args.strategy == 'consecutive':
-    data_module = ConsicutiveSessionsDataLoader(data_dir=args.data_dir,
+    data_module = ConsicutiveSessionsDataModule(data_dir=args.data_dir,
                                                 transforms=None,
                                                 batch_size=args.batch_size,
                                                 num_workers=args.num_workers,
