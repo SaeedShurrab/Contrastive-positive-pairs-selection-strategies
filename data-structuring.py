@@ -15,7 +15,7 @@ random.seed(24)
 try:
     os.mkdir('data')
 except:
-    print('directory exists')
+    pass
 
 data_dir = os.path.join(os.curdir,'data')
 
@@ -25,21 +25,68 @@ parser =  argparse.ArgumentParser(prog='Research data preperation')
 parser.add_argument('-d','--dataset', type=str,default='none',metavar='NAME',
                     choices=datasets, help='type of research dataset to be prepared '
                    )
+
+parser.add_argument('-r','--reduce', type=bool, default=False, metavar='REDUCE-DATA',
+                    help='reduce multi-class normal class and merge FMH and PMH'
+                   )
 args = parser.parse_args()
 
 
 if args.dataset == 'none':
-    print(f'please specfy the the dataset to be prepared as follow: python {__file__} --dataset (dataset name)')
+    print(f'select dataset to be prepared as follow: python {__file__} --dataset (dataset name)  | chose from (pretext, down-stream)')
 
+s3 = boto3.client('s3')
+
+BUCKET_NAME = 'thesisdata2021'
+PRETEXT_DATA = 'pretext.tar.xz'
+DOWN_STREAM_DATA = 'down-stream.tar.xz'
 
 if args.dataset == 'pretext':
-    pass
+    
+    # data download
+
+    try: 
+        assert 'pretext.tar.xz' in os.listdir(data_dir)
+    except AssertionError:
+        print('pretext dataset is being downloaded')
+        s3.download_file(BUCKET_NAME, PRETEXT_DATA, PRETEXT_DATA)    
+    else:
+        print('pretext data is already downloaded')
+
+    # data extraction
+
+    try: 
+        assert 'pretext' in os.listdir(data_dir)
+    except AssertionError:
+        print('pretext dataset is being extracted')
+        with tarfile.open(os.path.join(data_dir,'pretext.tar.xz')) as archive:
+            archive.extractall(path= data_dir)
+            
+    else:
+        print('pretext data is already extracted')
+
+    try:
+        os.rename(data_dir+'/contrastive',data_dir+'/pretext')
+    except:
+        pass
+
+    try:
+        os.remove(os.path.join(data_dir,'pretext.tar.xz'))
+    except FileNotFoundError:
+        pass
+
 
 
 if args.dataset == 'down-stream':
 
     # data download
-
+    try: 
+        assert 'down-stream.tar.xz' in os.listdir(data_dir)
+    except AssertionError:
+        print('down-stream dataset is being downloaded')
+        s3.download_file(BUCKET_NAME, PRETEXT_DATA, PRETEXT_DATA)    
+    else:
+        print('down-stream data is already downloaded')
 
     # data extraction
     try: 
@@ -81,7 +128,7 @@ if args.dataset == 'down-stream':
         try:
             os.mkdir(os.path.join(down_stream_dir,'binary'))
         except:
-            print('directory exisits')
+            pass
 
         binary_dir = os.path.join(down_stream_dir,'binary')
 
@@ -89,7 +136,7 @@ if args.dataset == 'down-stream':
             try:
                 os.mkdir(os.path.join(binary_dir, split))
             except:
-                print('directory exisits')
+                pass
 
 
 
@@ -98,7 +145,7 @@ if args.dataset == 'down-stream':
                 os.mkdir(os.path.join(binary_dir,split,'Normal'))
                 os.mkdir(os.path.join(binary_dir,split,'Abnormal'))
             except:
-                print('directories exisit')
+                pass
 
         try:
             assert len(os.listdir(os.path.join(binary_dir,'train','Normal'))) != 0
@@ -179,7 +226,7 @@ if args.dataset == 'down-stream':
         try:
             os.mkdir(os.path.join(down_stream_dir,'multi-class'))
         except:
-            print('directory exisits')
+            pass
 
         multi_class_dir = os.path.join(down_stream_dir,'multi-class')
 
@@ -187,7 +234,7 @@ if args.dataset == 'down-stream':
             try:
                 os.mkdir(os.path.join(multi_class_dir, split))
             except:
-                print('directory exisits')
+                pass
 
 
 
@@ -199,10 +246,13 @@ if args.dataset == 'down-stream':
                 os.mkdir(os.path.join(multi_class_dir,split,'CNV'))
                 os.mkdir(os.path.join(multi_class_dir,split,'GA'))
                 os.mkdir(os.path.join(multi_class_dir,split,'CSR'))
-                os.mkdir(os.path.join(multi_class_dir,split,'PMH'))
-                os.mkdir(os.path.join(multi_class_dir,split,'FMH'))
+                if args.reduce:
+                    os.mkdir(os.path.join(multi_class_dir,split,'MH'))
+                else:
+                    os.mkdir(os.path.join(multi_class_dir,split,'PMH'))
+                    os.mkdir(os.path.join(multi_class_dir,split,'FMH'))
             except:
-                print('directories exisit')
+                pass
 
         
         try:
@@ -215,8 +265,12 @@ if args.dataset == 'down-stream':
                 label = list(labels.loc[labels.Image_Path == idx]['Diagnose'])[0]
 
                 if label == 'Normal':
-                    shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','Normal'))
+                    if args.reduce and (len(os.listdir(os.path.join(multi_class_dir,'train','Normal'))) <= 4000):
+                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','Normal'))
 
+                    if args.reduce == False:
+                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','Normal'))
+ 
                 elif label == 'CSR':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','CSR'))
             
@@ -228,15 +282,22 @@ if args.dataset == 'down-stream':
             
                 elif label == 'CNV ( Choroidal neovascularization )':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','CNV'))
-            
-                elif label == 'Full Macular Hole ( Full Thickness )':
-                    shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','FMH'))
-            
-                elif label == 'Partial Macular Hole':
-                    shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','PMH'))
-            
+
                 elif label == 'VMT':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','VMT'))
+            
+                elif label == 'Full Macular Hole ( Full Thickness )':
+                    if args.reduce:
+                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MH'))
+                    else:
+                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','FMH'))
+            
+                elif label == 'Partial Macular Hole':
+                    if args.reduce:
+                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MH'))
+                    else:
+                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','PMH'))
+            
 
         else:
             print('multi-class training data is already prepared')
@@ -248,18 +309,26 @@ if args.dataset == 'down-stream':
         val_MRO_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','MRO'))) * VAL_RATIO)
         val_GA_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','GA'))) * VAL_RATIO)
         val_CNV_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','CNV'))) * VAL_RATIO)
-        val_FMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','FMH'))) * VAL_RATIO)
-        val_PMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','PMH'))) * VAL_RATIO)
         val_VMT_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','VMT'))) * VAL_RATIO)
+        if args.reduce:
+            val_MH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','MH'))) * VAL_RATIO)
+        else:
+            val_FMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','FMH'))) * VAL_RATIO)
+            val_PMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','PMH'))) * VAL_RATIO)
+
     
         val_normal_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','Normal')),k=val_normal_n)
         val_CSR_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','CSR')),k=val_CSR_n)
         val_MRO_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','MRO')),k=val_MRO_n)
         val_GA_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','GA')),k=val_GA_n)
         val_CNV_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','CNV')),k=val_CNV_n)
-        val_FMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','FMH')),k=val_FMH_n)
-        val_PMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','PMH')),k=val_PMH_n)
         val_VMT_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','VMT')),k=val_VMT_n)
+        if args.reduce:
+            val_MH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','MH')),k=val_MH_n)
+        else:
+            val_FMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','FMH')),k=val_FMH_n)
+            val_PMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','PMH')),k=val_PMH_n)
+
         
 
         try:
@@ -291,20 +360,27 @@ if args.dataset == 'down-stream':
                             os.path.join(multi_class_dir,'val','CNV',image)
                             )
 
-            for image in tqdm(val_FMH_images):
-                shutil.move(os.path.join(multi_class_dir,'train','FMH',image), 
-                            os.path.join(multi_class_dir,'val','FMH',image)
-                            )
-
-            for image in tqdm(val_PMH_images):
-                shutil.move(os.path.join(multi_class_dir,'train','PMH',image), 
-                            os.path.join(multi_class_dir,'val','PMH',image)
-                            )
-
             for image in tqdm(val_VMT_images):
                 shutil.move(os.path.join(multi_class_dir,'train','VMT',image), 
                             os.path.join(multi_class_dir,'val','VMT',image)
                             )
+            if args.reduce:
+                for image in tqdm(val_MH_images):
+                    shutil.move(os.path.join(multi_class_dir,'train','MH',image), 
+                                os.path.join(multi_class_dir,'val','MH',image)
+                                )
+
+            else:                
+                for image in tqdm(val_FMH_images):
+                    shutil.move(os.path.join(multi_class_dir,'train','FMH',image), 
+                                os.path.join(multi_class_dir,'val','FMH',image)
+                                )
+
+                for image in tqdm(val_PMH_images):
+                    shutil.move(os.path.join(multi_class_dir,'train','PMH',image), 
+                                os.path.join(multi_class_dir,'val','PMH',image)
+                                )
+
 
         else:
             print('multi-class validation data is already prepared')        
@@ -318,18 +394,26 @@ if args.dataset == 'down-stream':
         test_MRO_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','MRO'))) * TEST_RATIO)
         test_GA_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','GA'))) * TEST_RATIO)
         test_CNV_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','CNV'))) * TEST_RATIO)
-        test_FMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','FMH'))) * TEST_RATIO)
-        test_PMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','PMH'))) * TEST_RATIO)
         test_VMT_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','VMT'))) * TEST_RATIO)
+        if args.reduce:
+            test_MH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','MH'))) * TEST_RATIO)
+        else:
+            test_FMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','FMH'))) * TEST_RATIO)
+            test_PMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','PMH'))) * TEST_RATIO)
+
     
         test_normal_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','Normal')),k=test_normal_n)
         test_CSR_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','CSR')),k=test_CSR_n,)
         test_MRO_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','MRO')),k=test_MRO_n,)
         test_GA_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','GA')),k=test_GA_n,)
         test_CNV_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','CNV')),k=test_CNV_n,)
-        test_FMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','FMH')),k=test_FMH_n,)
-        test_PMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','PMH')),k=test_PMH_n,)
         test_VMT_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','VMT')),k=test_VMT_n,)
+        if args.reduce:
+            test_MH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','MH')),k=test_MH_n,)
+        else:
+            test_FMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','FMH')),k=test_FMH_n,)
+            test_PMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','PMH')),k=test_PMH_n,)
+
 
 
         try:
@@ -361,19 +445,155 @@ if args.dataset == 'down-stream':
                             os.path.join(multi_class_dir,'test','CNV',image)
                             )
 
-            for image in tqdm(test_FMH_images):
-                shutil.move(os.path.join(multi_class_dir,'val','FMH',image), 
-                            os.path.join(multi_class_dir,'test','FMH',image)
-                            )
-
-            for image in tqdm(test_PMH_images):
-                shutil.move(os.path.join(multi_class_dir,'val','PMH',image), 
-                            os.path.join(multi_class_dir,'test','PMH',image)
-                            )
-
             for image in tqdm(test_VMT_images):
                 shutil.move(os.path.join(multi_class_dir,'val','VMT',image), 
                             os.path.join(multi_class_dir,'test','VMT',image)
                             )
+
+            if args.reduce:
+                for image in tqdm(test_MH_images):
+                    shutil.move(os.path.join(multi_class_dir,'val','MH',image), 
+                                os.path.join(multi_class_dir,'test','MH',image)
+                                )
+            else:    
+                for image in tqdm(test_FMH_images):
+                    shutil.move(os.path.join(multi_class_dir,'val','FMH',image), 
+                                os.path.join(multi_class_dir,'test','FMH',image)
+                                )
+
+                for image in tqdm(test_PMH_images):
+                    shutil.move(os.path.join(multi_class_dir,'val','PMH',image), 
+                                os.path.join(multi_class_dir,'test','PMH',image)
+                                )
         else:
             print('multi-class test data is already prepared')
+
+
+    if down_stream_form == 'grading':
+        
+        try:
+            os.mkdir(os.path.join(down_stream_dir,'grading'))
+        except:
+            pass
+
+        grading_dir = os.path.join(down_stream_dir,'grading')
+
+        
+
+        while True:
+            target_disease = input('Please select the disease at which' + 
+                                    'grading data will be prepared for (CSR, MRO, GA, CNV, FMH, PMH, VMT): ')
+            target_disease = target_disease.upper()
+
+            if target_disease in ['CSR', 'MRO', 'GA', 'CNV', 'FMH', 'PMH','VMT']:
+                break
+            else:
+                continue
+
+
+        try:
+            os.mkdir(os.path.join(grading_dir,target_disease))
+        except:
+            pass
+
+
+        for split in splits:
+            try:
+                os.mkdir(os.path.join(grading_dir, target_disease,split))
+            except:
+                pass
+        
+
+
+        for split in splits:
+            try:
+                os.mkdir(os.path.join(grading_dir,target_disease,split,'mild'))
+                os.mkdir(os.path.join(grading_dir,target_disease,split,'moderate'))
+                os.mkdir(os.path.join(grading_dir,target_disease,split,'severe'))
+            except:
+                pass
+
+        print(f'{target_disease} training data prepration')
+        for idx in tqdm(list(labels.Image_Path)):
+            
+            image = str(idx) + '.jpg'
+            label = list(labels.loc[labels.Image_Path == idx]['Diagnose'])[0]
+            sever = list(labels.loc[labels.Image_Path == idx]['Severity'])[0]
+    
+    
+            if label != target_disease:
+                continue
+        
+            elif label == target_disease and sever == 'Mild':
+                shutil.copy(os.path.join(raw_images_dir,image),os.path.join(grading_dir,target_disease,'train','mild'))
+        
+            elif label == target_disease and sever == 'Moderate':
+                shutil.copy(os.path.join(raw_images_dir,image),os.path.join(grading_dir,target_disease,'train','moderate'))
+            
+            elif label == target_disease and sever == 'Advanced':
+                shutil.copy(os.path.join(raw_images_dir,image),os.path.join(grading_dir,target_disease,'train','severe'))
+
+
+        VAL_RATIO = 0.2
+
+        val_mild_n = int(len(os.listdir(os.path.join(grading_dir,target_disease,'train','mild'))) * VAL_RATIO) 
+        val_moderate_n = int(len(os.listdir(os.path.join(grading_dir, target_disease,'train','moderate'))) * VAL_RATIO)
+        val_sever_n = int(len(os.listdir(os.path.join(grading_dir, target_disease,'train','severe'))) * VAL_RATIO)
+    
+        val_mild_images = random.sample(os.listdir(os.path.join(grading_dir,target_disease,'train','mild')),k=val_mild_n)
+        val_moderate_images = random.sample(os.listdir(os.path.join(grading_dir, target_disease,'train','moderate')),k=val_moderate_n,)
+        val_sever_images = random.sample(os.listdir(os.path.join(grading_dir, target_disease,'train','severe')),k=val_sever_n,)
+
+        try:
+            assert len(os.listdir(os.path.join(grading_dir,target_disease,'val','mild'))) != 0
+        except AssertionError: 
+            print(f'preparaing {target_disease} grading validation data')
+            for image in tqdm(val_mild_images):
+                shutil.move(os.path.join(grading_dir,target_disease,'train','mild',image), 
+                            os.path.join(grading_dir,target_disease,'val','mild',image)
+                            )
+
+            for image in tqdm(val_moderate_images):
+                shutil.move(os.path.join(grading_dir,target_disease,'train','moderate',image), 
+                            os.path.join(grading_dir,target_disease,'val','moderate',image)
+                            )
+            for image in tqdm(val_sever_images):
+                shutil.move(os.path.join(grading_dir,target_disease,'train','severe',image), 
+                            os.path.join(grading_dir,target_disease,'val','severe',image)
+                            )
+        else:
+            print(f'{target_disease} validation data is already prepared')
+
+
+        TEST_RATIO = 0.05 # out of all images
+        TEST_RATIO = (TEST_RATIO/(VAL_RATIO))
+
+        test_mild_n = int(len(os.listdir(os.path.join(grading_dir,target_disease,'val','mild'))) * TEST_RATIO) 
+        test_moderate_n = int(len(os.listdir(os.path.join(grading_dir, target_disease,'val','moderate'))) * TEST_RATIO)
+        test_sever_n = int(len(os.listdir(os.path.join(grading_dir, target_disease,'val','severe'))) * TEST_RATIO)
+    
+        test_mild_images = random.sample(os.listdir(os.path.join(grading_dir,target_disease,'val','mild')),k=test_mild_n)
+        test_moderate_images = random.sample(os.listdir(os.path.join(grading_dir, target_disease,'val','moderate')),k=test_moderate_n,)
+        test_sever_images = random.sample(os.listdir(os.path.join(grading_dir, target_disease,'val','severe')),k=test_sever_n,)
+
+        try:
+            assert len(os.listdir(os.path.join(grading_dir,target_disease,'test','mild'))) != 0
+        except AssertionError: 
+            print(f'preparaing {target_disease} grading testing data')
+            for image in tqdm(test_mild_images):
+                shutil.move(os.path.join(grading_dir,target_disease,'val','mild',image), 
+                            os.path.join(grading_dir,target_disease,'test','mild',image)
+                            )
+
+            for image in tqdm(test_moderate_images):
+                shutil.move(os.path.join(grading_dir,target_disease,'val','moderate',image), 
+                            os.path.join(grading_dir,target_disease,'test','moderate',image)
+                            )
+            for image in tqdm(test_sever_images):
+                shutil.move(os.path.join(grading_dir,target_disease,'val','severe',image), 
+                            os.path.join(grading_dir,target_disease,'test','severe',image)
+                            )
+        else:
+            print(f'{target_disease} test data is already prepared')
+
+
