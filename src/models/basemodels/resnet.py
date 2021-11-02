@@ -1,11 +1,10 @@
-
-import torch 
 import torch.nn as nn
 
 from collections import namedtuple
 
 from torch import Tensor
 from typing import Callable, Any, NamedTuple, Optional, Tuple, List
+import torch.optim as optim
 
 
 
@@ -294,3 +293,4 @@ def resnet152(output_dim: int = 1000,
                   output_dim=output_dim, 
                   image_channels=image_channels
                   )
+

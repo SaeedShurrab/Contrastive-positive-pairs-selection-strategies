@@ -3,25 +3,24 @@ import json
 import argparse
 import mlflow
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import MLFlowLogger
-from src.models.sslmodels.byol import NormalizedMSELoss
-from src.modules.pretext.byol import ByolModel
-from src.data.pretext.datasets import UnrestrictedDataModule
-from src.data.pretext.datasets import XYScansDataModule
-from src.data.pretext.datasets import ConsicutiveSessionsDataModule
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
 import src.models.basemodels as models
+import torch.nn as nn
+from src.modules.downstream.classification import ClassificationModel
+from src.data.downstream.datasets import DownStreamDataModule
+from pytorch_lightning.loggers import MLFlowLogger
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
+
+
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
     and callable(models.__dict__[name]))
 
 
+parser = argparse.ArgumentParser(description='down-stream training command line interface')
 
 
-
-parser = argparse.ArgumentParser(description='BYOL training command line interface')
-# genral options
+# training mode option
 parser.add_argument('-s','--strategy', type=str, default='unrestricted', 
                     choices=['unrestricted', 'xyscans', 'consecutive'],
                     metavar='TRAINING-PLAN', help='positive pairs selection strategy | \
@@ -29,7 +28,9 @@ parser.add_argument('-s','--strategy', type=str, default='unrestricted',
                     | default: (unrestricted)' 
                    )
 
+
 # data loading options
+
 parser.add_argument('-d','--data-dir', type=str, 
                     default=os.path.join(os.curdir,'data','pretext'),
                     metavar='DIR', help='path to the training data | default: (./data/pretext)'
@@ -51,9 +52,6 @@ parser.add_argument('--backbone', '--bb',type=str, default='resnet50',
                     'backbones: ('+  ', '.join(model_names) +') \
                     | default: (resnet50)' 
                    )
-parser.add_argument('--target-decay','--td', type=float, default=0.996, metavar='TD',
-                    help='target network decay factor  | default: (0.996)'
-                   )
 parser.add_argument('-o','--optimizer', type=str, default='sgd', 
                     choices=['Adam','adam', 'SGD', 'sgd'],
                     metavar='OPT', help='model optimizer | ' + \
@@ -65,12 +63,12 @@ parser.add_argument('--learning-rate','--lr', type=float, default=0.01, metavar=
 parser.add_argument('--weight-decay','--wd', type=float, default=0.0, metavar='WD',
                     help='L2 weight decay | default: (0.0)'
                    )
-parser.add_argument('--scheduler','--sc', default='step', 
-                    choices=['','step','exponential'],
+parser.add_argument('--scheduler','--sc', type=str, default='step', 
+                    choices=['step','exponential'],
                     metavar='SCHED', help=' learning rate schduler  | ' + \
                     'schedulers: (step, exponential) | default: (step)' 
                    )
-parser.add_argument('--scheduler-step','--ss', type=int, default=1, metavar='SS',
+parser.add_argument('--scheduler-step','--ss', type=int, default=5, metavar='SS',
                     help='StepLR scheduler step size | default: (5)'
                    )
 parser.add_argument('--scheduler-gamma','--sg', type=float, default=0.5, metavar='SG',
@@ -98,13 +96,12 @@ parser.add_argument('-t','--tracking-uri',type=str, default='file:///src/logs', 
                    )
 
 # callbacks options
-parser.add_argument('--monitor-quantity','--mq', type=str, default='train_loss',metavar='MODE',
+parser.add_argument('--monitor-quantity','--mq', type=str, default='val_loss',metavar='MODE',
                    help='quantity to monitor for checkpoint saving default :| (train_loss)'
                    )
 parser.add_argument('--monitor-mode','--mm', type=str, default='min',metavar='MODE',
                    help='checkpoints saving mode based on the monitored quantity | default: (min)'
                    )
-
 parser.add_argument('--es-delta', '--esd', type=float, default=0.001, metavar='DELTA',
                    help='minimum change in the monitoring quantity to early stop training | defualt: (0.001)'
                    )
@@ -113,56 +110,50 @@ parser.add_argument('--es-patience','--esp', type=int, default=5,metavar='PATIEN
                    )
 
 
+
 args = parser.parse_args()
 
 
 
 
-if args.strategy == 'unrestricted':
-    data_module = UnrestrictedDataModule(data_dir=args.data_dir,
-                                         transforms=None,
-                                         batch_size=args.batch_size,
-                                         num_workers=args.num_workers,
-                                         pin_memory=args.pin_memory
-                                        )
+if args.dataset_form == 'binary':
+    data_dir = os.path.join(args.data_dir,'binary')
 
-elif args.strategy == 'xyscans':
-    data_module = XYScansDataModule(data_dir=args.data_dir,
-                                    transforms=None,
-                                    batch_size=args.batch_size,
-                                    num_workers=args.num_workers,
-                                    pin_memory=args.pin_memory
-                                    )
+elif args.dataset_form ==' multi-class':
+    data_dir = os.path.join(args.data_dir,'multi-class')
 
+elif args.form == 'grading':
+    data_dir = os.path.join(args.data_dir,'grading')   
 
-elif args.strategy == 'consecutive':
-    data_module = ConsicutiveSessionsDataModule(data_dir=args.data_dir,
-                                                transforms=None,
-                                                batch_size=args.batch_size,
-                                                num_workers=args.num_workers,
-                                                pin_memory=args.pin_memory
-                                               )
+data_module = DownStreamDataModule(data_dir=data_dir,
+                                   train_transforms=None,
+                                   val_test_transforms=None,
+                                   batch_size=args.batch_size,
+                                   num_workers=args.num_workers,
+                                   pin_memory=args.pin_memory
+                                  )
 
 
 
+model = ClassificationModel(model=models.__dict__[args.backbone],
+                            criterion=nn.CrossEntropyLoss,
+                            optimizer=args.optimizer,
+                            learning_rate=args.learning_rate,
+                            weight_decay=args.weight_decay,
+                            scheduler=args.scheduler,
+                            sched_step_size=args.scheduler_step,
+                            sched_gamma=args.scheduler_gamma,
+                            input_channls=args,
+                            output_dim=args,
+                            freeze= True if args.linear else False
+                            )
+model.model.load
+version  = input(f'please specfiy the the current version of SimSiamS expriment and {args.strategy} run: ')
+os.environ['MLFLOW_TRACKING_URI'] = args.tracking_uri
 
-model = ByolModel(backbone=models.__dict__[args.backbone],
-                  criterion=NormalizedMSELoss,
-                  target_decay=args.target_decay,
-                  optimizer=args.optimizer,
-                  learning_rate=args.learning_rate,
-                  weight_decay=args.weight_decay,
-                  scheduler=args.scheduler,
-                  sched_step_size=args.scheduler_step,
-                  sched_gamma=args.scheduler_gamma,
-                 )
 
-
-version  = input(f'please specfiy the the current version of BYOL expriment and {args.strategy} run: ')
-
-
-mlflow_logger = MLFlowLogger(experiment_name='BYOL', 
-                             tracking_uri=args.tracking_uri,
+mlflow_logger = MLFlowLogger(experiment_name='SimSiam', 
+                             tracking_uri=os.environ['MLFLOW_TRACKING_URI'],
                              run_name=args.strategy,
                              tags={'Version': version}
                              )
@@ -186,7 +177,7 @@ trainer = pl.Trainer(gpus=args.ngpus,
 
 
 if __name__ == '__main__':
-
     with open('/src/logs/' + mlflow_logger.experiment_id +'/'+mlflow_logger.run_id+ '/artifacts/args.json', 'w') as fp:
         json.dump(vars(args), fp)
+     
     trainer.fit(model=model, datamodule=data_module)

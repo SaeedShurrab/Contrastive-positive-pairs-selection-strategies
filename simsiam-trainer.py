@@ -6,7 +6,8 @@ import pytorch_lightning as pl
 
 from pytorch_lightning.loggers import MLFlowLogger
 from torchvision.models import resnet
-from src.models.sslmodels.simsiam import SimSiamModel, NegativeCosineSimilarity
+from src.models.sslmodels.simsiam import NegativeCosineSimilarity
+from src.modules.pretext.simsiam import SimSiamModel
 from src.data.pretext.datasets import UnrestrictedDataModule
 from src.data.pretext.datasets import XYScansDataModule
 from src.data.pretext.datasets import ConsicutiveSessionsDataModule
