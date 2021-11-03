@@ -37,7 +37,7 @@ class DownStreamDataModule(pl.LightningDataModule):
                 num_workers: int = 8,
                 pin_memory: bool = True 
                 ) -> None:
-        super(DownStreamDataModule,super).__init__()
+        super(DownStreamDataModule,self).__init__()
         self.data_dir = data_dir
         self.train_transforms = train_transforms
         self.val_test_transforms = val_test_transforms

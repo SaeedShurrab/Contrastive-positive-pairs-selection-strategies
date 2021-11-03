@@ -43,8 +43,8 @@ class UnrestrictedOCT(Dataset):
                    ) -> Tuple[Tensor]:
         
         image = self.all_images[idx]
-        view1 = self.transforms(Image.open(fp=image))
-        view2 = self.transforms(Image.open(fp=image))
+        view1 = self.transforms(Image.open(fp=image).convert('RGB'))
+        view2 = self.transforms(Image.open(fp=image).convert('RGB'))
         return (view1, view2)
         
         
@@ -119,8 +119,8 @@ class XYRetinaOCT(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[Tensor]:
         view1, view2 = self.all_pairs[idx]
-        view1 = self.transforms(Image.open(fp=view1))
-        view2 = self.transforms(Image.open(fp=view2))
+        view1 = self.transforms(Image.open(fp=view1).convert('RGB'))
+        view2 = self.transforms(Image.open(fp=view2).convert('RGB'))
         return (view1, view2)
         
         
@@ -211,8 +211,8 @@ class ConsecutiveSessionsOCT(Dataset):
             
     def __getitem__(self, idx: int) -> Tuple[Tensor]:
         view1, view2 = self.all_pairs[idx]
-        view1 = self.transforms(Image.open(fp=view1))
-        view2 = self.transforms(Image.open(fp=view2))
+        view1 = self.transforms(Image.open(fp=view1).convert('RGB'))
+        view2 = self.transforms(Image.open(fp=view2).convert('RGB'))
         return (view1, view2)
         
         

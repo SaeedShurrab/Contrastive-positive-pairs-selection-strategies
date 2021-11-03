@@ -2,6 +2,7 @@ import os
 import json
 import argparse
 import mlflow
+import torch
 import pytorch_lightning as pl
 import src.models.basemodels as models
 import torch.nn as nn
@@ -20,22 +21,43 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='down-stream training command line interface')
 
 
-# training mode option
-parser.add_argument('-s','--strategy', type=str, default='unrestricted', 
+# General-info
+
+parser.add_argument('--training-scheme', '--ts', type=str, default='linear', metavar='TRAINING-PROTOCOL',
+                    choices=['linear','fine-tune','from-scratch','transfer-learning'],
+                    help='scheme ate which the training will be performed | \
+                          schemes: (linear, fine-tune, from-scratch, transfer-learning)'
+)
+
+parser.add_argument('--ssl-model','--ssl', type=str,default='BYOL',metavar='MODEL',
+                    choices=['BYOL','SimSiam'],
+                    help='self-supervised learning model used as pretraining method'
+                   )
+
+parser.add_argument('-s','--strategy', type=str, default='unrestricted', metavar='TRAINING-PLAN',
                     choices=['unrestricted', 'xyscans', 'consecutive'],
-                    metavar='TRAINING-PLAN', help='positive pairs selection strategy | \
-                    strategies: (\'unrestricted\', \'xyscans\', \'consecutive\') \
+                    help='positive pairs selection strategy | \
+                    strategies: (unrestricted, xyscans, consecutive) \
                     | default: (unrestricted)' 
                    )
 
+parser.add_argument('--weights-path', '--ckpt', type=str,default=os.path.join(os.curdir),metavar='WEIGHTS',
+                    help=' pathe to the base pretrained weights to load'
+                   )
+
+parser.add_argument('--classification-problem','--cp', type=str,default='binary',metavar='TASK',
+                    choices=['binary','multi-class','grading'],
+                    help='OCT classification problem to be accomplished | problems: \
+                        (binary, multi-class, grading) | default: binary'
+                   )
 
 # data loading options
 
 parser.add_argument('-d','--data-dir', type=str, 
-                    default=os.path.join(os.curdir,'data','pretext'),
-                    metavar='DIR', help='path to the training data | default: (./data/pretext)'
+                    default=os.path.join(os.curdir,'data','down-stream'),
+                    metavar='DIR', help='path to the training data | default: (./data/down-stream/)'
                    )
-parser.add_argument('-b','--batch-size', type=int, default=256,
+parser.add_argument('-b','--batch-size', type=int, default=32,
                     help='total number of gpus used during training | default: (256)'
                    )
 parser.add_argument('-w', '--num-workers', type=int, default=8, metavar='N',
@@ -74,6 +96,9 @@ parser.add_argument('--scheduler-step','--ss', type=int, default=5, metavar='SS'
 parser.add_argument('--scheduler-gamma','--sg', type=float, default=0.5, metavar='SG',
                     help='learrning rate reduction factor | default: (0.5)'
                    )                    
+parser.add_argument('--output-dim', '--od', type=int, default=3, metavar='DIM',
+                    help='number classes in classifciation problem'
+                   )
 
 # trainer options
 parser.add_argument('-g','--ngpus', type=int, default=-1, metavar='N',
@@ -116,14 +141,15 @@ args = parser.parse_args()
 
 
 
-if args.dataset_form == 'binary':
+if args.classification_problem == 'binary':
     data_dir = os.path.join(args.data_dir,'binary')
 
-elif args.dataset_form ==' multi-class':
+elif args.classification_problem ==' multi-class':
     data_dir = os.path.join(args.data_dir,'multi-class')
 
-elif args.form == 'grading':
-    data_dir = os.path.join(args.data_dir,'grading')   
+elif args.classification_problem == 'grading':
+    disise = input('please enter disease name from (CSR, MRO, GA, CNV, FMH, PMH, VMT): ')
+    data_dir = os.path.join(args.data_dir,'grading',disise)   
 
 data_module = DownStreamDataModule(data_dir=data_dir,
                                    train_transforms=None,
@@ -132,6 +158,12 @@ data_module = DownStreamDataModule(data_dir=data_dir,
                                    num_workers=args.num_workers,
                                    pin_memory=args.pin_memory
                                   )
+
+
+if args.training_scheme == 'linear' or 'transfer-learning':
+    freeze = True
+else:
+    freeze = False
 
 
 
@@ -143,19 +175,28 @@ model = ClassificationModel(model=models.__dict__[args.backbone],
                             scheduler=args.scheduler,
                             sched_step_size=args.scheduler_step,
                             sched_gamma=args.scheduler_gamma,
-                            input_channls=args,
-                            output_dim=args,
-                            freeze= True if args.linear else False
+                            output_dim=args.output_dim,
+                            freeze= freeze
                             )
-model.model.load
+
+#if args.training_scheme == 'linear' or 'fine-tune':
+#    model.model.load_state_dict(torch.load(args.weights_path),strict = False)['state_dict']  
+#else:
+#    pass
+
 version  = input(f'please specfiy the the current version of SimSiamS expriment and {args.strategy} run: ')
 os.environ['MLFLOW_TRACKING_URI'] = args.tracking_uri
 
 
-mlflow_logger = MLFlowLogger(experiment_name='SimSiam', 
+mlflow_logger = MLFlowLogger(experiment_name=args.training_scheme, 
                              tracking_uri=os.environ['MLFLOW_TRACKING_URI'],
-                             run_name=args.strategy,
-                             tags={'Version': version}
+                             run_name=' '.join([args.ssl_model, args.strategy, args.classification_problem]),
+                             tags={'training-scheme': args.training_scheme,
+                                    'ssl-model':args.ssl_model,
+                                    'strategy':args.strategy,
+                                    'classification-problem': args.classification_problem,
+                                    'Version': version,
+                                  }
                              )
 checkpoint_callback = ModelCheckpoint(monitor=args.monitor_quantity, 
                                       mode= args.monitor_mode
@@ -181,3 +222,33 @@ if __name__ == '__main__':
         json.dump(vars(args), fp)
      
     trainer.fit(model=model, datamodule=data_module)
+    trainer.test()
+
+
+'''
+python --training-scheme linear \
+--ssl-model BYOL \
+--strategy unrestricted \
+--weights-path ./ \
+--classification-problem binary \
+--data-dir ./data/down-stream \
+--batch-size 128 \
+--num-workers 8 \
+--pin-memory True \
+--backbone resnet50 \
+--optimizer adam \
+--learning-rate 0.01 \
+--weight-decay 0.0 \
+--scheduler step \
+--scheduler-step 5 \
+--scheduler-gamma 0.5 \
+--ngpus -1 \
+--epochs 100 \
+--precision 16 \
+--log-every-n 1 \
+--tracking-uri file:///src/logs \
+--monitor_quantity val_loss \
+--monitor-mode min \
+--es-delta 0.01 \
+--es-patience 5 
+'''

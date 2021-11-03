@@ -180,7 +180,7 @@ densenet264_config = [6,12,64,48]
 
 
 def densenet121(output_dim: int = 1000, 
-                image_channels :int = 1
+                image_channels :int = 3
                ) -> DenseNet:
     
     return DenseNet(config=densenet121_config, 
@@ -191,7 +191,7 @@ def densenet121(output_dim: int = 1000,
 
 
 def densenet169(output_dim: int = 1000,
-                image_channels :int = 1
+                image_channels :int = 3
                ) -> DenseNet:
 
     return DenseNet(config=densenet169_config, 
@@ -202,7 +202,7 @@ def densenet169(output_dim: int = 1000,
 
 
 def densenet201(output_dim: int = 1000,
-                image_channels: int = 1
+                image_channels: int = 3
                ) -> DenseNet:
     
     return DenseNet(config=densenet201_config, 
@@ -211,7 +211,7 @@ def densenet201(output_dim: int = 1000,
                    )
 
 def densenet264(output_dim: int = 1000,
-                image_channels: int = 1
+                image_channels: int = 3
                ) -> DenseNet:
     
     return DenseNet(config=densenet264_config,

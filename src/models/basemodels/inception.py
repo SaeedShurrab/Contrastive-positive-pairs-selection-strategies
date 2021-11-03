@@ -270,7 +270,7 @@ class InceptionAux(nn.Module):
 
 class InceptionV3(nn.Module):
     def __init__(self,
-                 image_channels: int, 
+                 image_channels: int =3, 
                  output_dim: int = 1000, 
                  aux_clf: bool = True
                 ) -> None:
@@ -309,7 +309,7 @@ class InceptionV3(nn.Module):
         
         self.avg_pool1 = nn.AdaptiveAvgPool2d(output_size=(1,1))
         self.dropout = nn.Dropout()
-        self.fc1 = nn.Linear(2048,output_dim) 
+        self.fc = nn.Linear(2048,output_dim) 
         
         
     
@@ -360,7 +360,7 @@ class InceptionV3(nn.Module):
         
         
 
-def inceptionv3(imag_channels:int = 1, 
+def inceptionv3(imag_channels:int = 3, 
                 output_dim:int = 1000, 
                 aux_clf: bool =True
                ) -> InceptionV3:

@@ -159,7 +159,7 @@ class GoogleNet(nn.Module):
         
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1,1))
         self.dropout = nn.Dropout(p= 0.5)
-        self.fc1 = nn.Linear(in_features=1024,out_features=output_dim)
+        self.fc = nn.Linear(in_features=1024,out_features=output_dim)
         
         
 
@@ -194,7 +194,7 @@ class GoogleNet(nn.Module):
         x = self.avgpool(x)
         x = torch.flatten(x,1)
         x = self.dropout(x)
-        x = self.fc1(x)
+        x = self.fc(x)
         
         if self.aux_clf:
             return x, x_aux1, x_aux2
@@ -203,7 +203,7 @@ class GoogleNet(nn.Module):
 
 
 
-def googlenet(imag_channels:int = 1,
+def googlenet(imag_channels:int = 3,
               output_dim:int = 1000, 
               aux_clf: bool =True
              ) -> GoogleNet:

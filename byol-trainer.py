@@ -190,3 +190,34 @@ if __name__ == '__main__':
     with open('/src/logs/' + mlflow_logger.experiment_id +'/'+mlflow_logger.run_id+ '/artifacts/args.json', 'w') as fp:
         json.dump(vars(args), fp)
     trainer.fit(model=model, datamodule=data_module)
+
+
+
+
+
+
+
+'''
+python --strategy unrestricted \
+--data-dir ./data/pretext \
+--batch-size 128 \
+--num-workers 8 \
+--pin-memory True \
+--target-decay 0.996 \
+--backbone resnet50 \
+--optimizer adam \
+--learning-rate 0.01 \
+--weight-decay 0.0 \
+--scheduler step \
+--scheduler-step 5 \
+--scheduler-gamma 0.5 \
+--ngpus -1 \
+--epochs 100 \
+--precision 16 \
+--log-every-n 1 \
+--tracking-uri file:///src/logs \
+--monitor_quantity train_loss \
+--monitor-mode min \
+--es-delta 0.01 \
+--es-patience 5 
+'''
