@@ -277,22 +277,22 @@ if args.dataset == 'down-stream':
                 elif label == 'MRO':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MRO'))
             
-                elif label == 'Geographic atrophy':
+                elif label == 'GA':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','GA'))
             
-                elif label == 'CNV ( Choroidal neovascularization )':
+                elif label == 'CNV':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','CNV'))
 
                 elif label == 'VMT':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','VMT'))
             
-                elif label == 'Full Macular Hole ( Full Thickness )':
+                elif label == 'FMH':
                     if args.reduce:
                         shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MH'))
                     else:
                         shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','FMH'))
             
-                elif label == 'Partial Macular Hole':
+                elif label == 'PMH':
                     if args.reduce:
                         shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MH'))
                     else:
