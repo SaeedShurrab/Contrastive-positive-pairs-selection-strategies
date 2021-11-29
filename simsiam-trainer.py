@@ -184,7 +184,7 @@ trainer = pl.Trainer(gpus=args.ngpus,
 
 
 if __name__ == '__main__':
-    with open('/src/logs/' + mlflow_logger.experiment_id +'/'+mlflow_logger.run_id+ '/artifacts/args.json', 'w') as fp:
+    with open('args.json', 'w') as fp:
         json.dump(vars(args), fp)
      
     trainer.fit(model=model, datamodule=data_module)

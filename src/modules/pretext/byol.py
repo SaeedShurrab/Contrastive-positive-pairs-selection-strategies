@@ -1,11 +1,11 @@
-from typing import Optional, List
+from typing import Dict, Optional, List, Any
 
 from torch import Tensor
 import torch.nn as nn
 import torch.optim as optim
 
 import pytorch_lightning as pl
-
+import glob
 from ...models.sslmodels.byol import BYOL
 
 
@@ -45,10 +45,11 @@ class ByolModel(pl.LightningModule):
         loss = self.criterion(v1_on, v2_tar, v2_on, v1_tar)
         
         self.log("train_loss", loss, on_epoch= True,on_step=True ,prog_bar=True, logger=True)
+        #self.logger.experiment.log_artifact(self.logger.run_id,glob.glob(f'/src/{self.logger.experiment_id}/{self.logger.run_id}/checkpoints/*.ckpt)')[0])
         return loss
 
- 
-
+    
+    
     def on_before_zero_grad(self, _) -> None:
         self.learner.update_target_network()
     

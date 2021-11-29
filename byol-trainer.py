@@ -3,7 +3,8 @@ import json
 import argparse
 import mlflow
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import MLFlowLogger
+#from pytorch_lightning.loggers import MLFlowLogger
+from src.modules.utils import MLFlowLoggerCheckpointer
 from src.models.sslmodels.byol import NormalizedMSELoss
 from src.modules.pretext.byol import ByolModel
 from src.data.pretext.datasets import UnrestrictedDataModule
@@ -93,7 +94,7 @@ parser.add_argument('--log-every-n','--le', type=int, default=1, metavar='FREQUE
 
 # logger options
 
-parser.add_argument('-t','--tracking-uri',type=str, default='file:///src/logs', metavar='URI',
+parser.add_argument('-t','--tracking-uri',type=str, default='http://ec2-18-224-29-40.us-east-2.compute.amazonaws.com', metavar='URI',
                     help='Mlflow tracking uri directory | default: (file:///src/logs)'
                    )
 
@@ -161,13 +162,13 @@ model = ByolModel(backbone=models.__dict__[args.backbone],
 version  = input(f'please specfiy the the current version of BYOL expriment and {args.strategy} run: ')
 
 
-mlflow_logger = MLFlowLogger(experiment_name='BYOL', 
+mlflow_logger = MLFlowLoggerCheckpointer(experiment_name='BYOL1', 
                              tracking_uri=args.tracking_uri,
                              run_name=args.strategy,
                              tags={'Version': version}
                              )
 checkpoint_callback = ModelCheckpoint(monitor=args.monitor_quantity, 
-                                      mode= args.monitor_mode
+                                      mode= args.monitor_mode,filename='checkpoint'
                                      )
 early_stop = EarlyStopping(monitor=args.monitor_quantity, 
                            min_delta=args.es_delta,
@@ -187,7 +188,8 @@ trainer = pl.Trainer(gpus=args.ngpus,
 
 if __name__ == '__main__':
 
-    with open('/src/logs/' + mlflow_logger.experiment_id +'/'+mlflow_logger.run_id+ '/artifacts/args.json', 'w') as fp:
+
+    with open('args.json', 'w') as fp:
         json.dump(vars(args), fp)
     trainer.fit(model=model, datamodule=data_module)
 
@@ -198,7 +200,7 @@ if __name__ == '__main__':
 
 
 '''
-python --strategy unrestricted \
+python byol-trainer.py --strategy unrestricted \
 --data-dir ./data/pretext \
 --batch-size 128 \
 --num-workers 8 \
@@ -216,7 +218,7 @@ python --strategy unrestricted \
 --precision 16 \
 --log-every-n 1 \
 --tracking-uri file:///src/logs \
---monitor_quantity train_loss \
+--monitor-quantity train_loss \
 --monitor-mode min \
 --es-delta 0.01 \
 --es-patience 5 
