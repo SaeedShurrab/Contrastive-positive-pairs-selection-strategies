@@ -4,7 +4,8 @@ import argparse
 import mlflow
 import pytorch_lightning as pl
 
-from pytorch_lightning.loggers import MLFlowLogger
+#from pytorch_lightning.loggers import MLFlowLogger
+from src.modules.utils import MLFlowLoggerCheckpointer
 from torchvision.models import resnet
 from src.models.sslmodels.simsiam import NegativeCosineSimilarity
 from src.modules.pretext.simsiam import SimSiamModel
@@ -159,11 +160,11 @@ model = SimSiamModel(backbone=models.__dict__[args.backbone],
 
 version  = input(f'please specfiy the the current version of SimSiamS expriment and {args.strategy} run: ')
 os.environ['MLFLOW_TRACKING_URI'] = args.tracking_uri
-mlflow_logger = MLFlowLogger(experiment_name='SimSiam', 
-                             tracking_uri=os.environ['MLFLOW_TRACKING_URI'],
-                             run_name=args.strategy,
-                             tags={'Version': version}
-                             )
+mlflow_logger = MLFlowLoggerCheckpointer(experiment_name='SimSiam', 
+                                         tracking_uri=os.environ['MLFLOW_TRACKING_URI'],
+                                         run_name=args.strategy,
+                                         tags={'Version': version}
+                                        )
 checkpoint_callback = ModelCheckpoint(monitor=args.monitor_quantity, 
                                       mode= args.monitor_mode
                                      )
@@ -188,6 +189,7 @@ if __name__ == '__main__':
         json.dump(vars(args), fp)
      
     trainer.fit(model=model, datamodule=data_module)
+    os.remove('./args.json')
 
 
 

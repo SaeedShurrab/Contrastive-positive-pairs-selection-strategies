@@ -45,13 +45,17 @@ class ByolModel(pl.LightningModule):
         loss = self.criterion(v1_on, v2_tar, v2_on, v1_tar)
         
         self.log("train_loss", loss, on_epoch= True,on_step=True ,prog_bar=True, logger=True)
-        #self.logger.experiment.log_artifact(self.logger.run_id,glob.glob(f'/src/{self.logger.experiment_id}/{self.logger.run_id}/checkpoints/*.ckpt)')[0])
+        #self.logger.experiment.log_artifact()
         return loss
 
-    
+    def on_fit_start(self) -> None:
+        self.logger.experiment.log_artifact(self.logger.run_id,'./args.json')
     
     def on_before_zero_grad(self, _) -> None:
         self.learner.update_target_network()
+
+    def on_fit_start(self) -> None:
+        self.logger.experiment.log_artifact('/src/args.json')
     
 
     def configure_optimizers(self):

@@ -45,6 +45,8 @@ class SimSiamModel(pl.LightningModule):
         return loss
 
 
+    def on_fit_start(self) -> None:
+        self.logger.experiment.log_artifact(self.logger.run_id,'./args.json')
 
     def configure_optimizers(self):
         if self.optimizer == 'adam':
