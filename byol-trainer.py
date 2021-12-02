@@ -94,7 +94,7 @@ parser.add_argument('--log-every-n','--le', type=int, default=1, metavar='FREQUE
 
 # logger options
 
-parser.add_argument('-t','--tracking-uri',type=str, default='http://ec2-18-224-29-40.us-east-2.compute.amazonaws.com', metavar='URI',
+parser.add_argument('-t','--tracking-uri',type=str, default='http://ec2-13-59-105-139.us-east-2.compute.amazonaws.com', metavar='URI',
                     help='Mlflow tracking uri directory | default: (file:///src/logs)'
                    )
 
