@@ -1,6 +1,7 @@
 from typing import Optional, List
 
 from torch import Tensor
+from torch._C import T
 import torch.nn as nn
 import torch.optim as optim
 
@@ -17,7 +18,8 @@ class SimSiamModel(pl.LightningModule):
                 weight_decay: float = 0.0,
                 scheduler: str = 'step',
                 sched_step_size: int = 5,
-                sched_gamma: float = 0.5
+                sched_gamma: float = 0.5,
+                max_epochs: int = 50
                 ) -> None:
         super(SimSiamModel, self).__init__()
 
@@ -31,6 +33,7 @@ class SimSiamModel(pl.LightningModule):
         self.scheduler = scheduler
         self.sched_step_size = sched_step_size
         self.sched_gamma = sched_gamma
+        self.max_epochs = max_epochs
 
     def training_step(self, 
                       batch: List[Tensor], 
@@ -69,9 +72,14 @@ class SimSiamModel(pl.LightningModule):
                                                   gamma=self.sched_gamma
                                                  )
         elif self.scheduler == 'exponential':
-             scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, 
+            scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, 
                                                           gamma=self.sched_gamma
-                                                         )  
+                                                        )  
+        elif self.scheduler == 'cosine':
+            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer,
+                                                            eta_min=0,
+                                                            T_max=self.max_epochs
+                                                            )
 
         else: 
             raise NameError('scheduler must be eithr step or exponential')

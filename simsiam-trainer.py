@@ -155,6 +155,7 @@ model = SimSiamModel(backbone=models.__dict__[args.backbone],
                      scheduler=args.scheduler,
                      sched_step_size=args.scheduler_step,
                      sched_gamma=args.scheduler_gamma,
+                     max_epochs=args.epochs
                     )
 
 
