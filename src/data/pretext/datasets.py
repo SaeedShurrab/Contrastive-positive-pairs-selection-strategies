@@ -14,15 +14,15 @@ defualt_transforms = T.Compose([T.Resize((224,224)),
                                                T.RandomAffine(degrees=0, shear=10, scale=(1,1))], p=1),
                                 T.RandomHorizontalFlip(p=0.5),
                                 T.ToTensor(),
-                                T.Normalize(mean=torch.tensor([0.1115]), # Rememebr to calculate and update
-                                            std=torch.tensor([0.1372])) # Rememebr to calculate and update
+                                T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]),
+                                            std=torch.tensor([0.1228,0.1228,0.1228])) 
                         ])
 
 
 specific_transforms = T.Compose([T.Resize((224,224)),
                                 T.ToTensor(),
-                                T.Normalize(mean=torch.tensor([0.1115]),
-                                            std=torch.tensor([0.1372])), 
+                                T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]),
+                                            std=torch.tensor([0.1228,0.1228,0.1228])) 
                         ])
 
 class UnrestrictedOCT(Dataset):
