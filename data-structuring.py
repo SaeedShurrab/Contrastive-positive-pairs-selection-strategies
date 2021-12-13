@@ -80,13 +80,13 @@ if args.dataset == 'pretext':
 if args.dataset == 'down-stream':
 
     # data download
-    try: 
-        assert 'down-stream.tar.xz' in os.listdir(data_dir)
-    except AssertionError:
-        print('down-stream dataset is being downloaded')
-        s3.download_file(BUCKET_NAME, PRETEXT_DATA, PRETEXT_DATA)    
-    else:
-        print('down-stream data is already downloaded')
+    #try: 
+    #    assert 'down-stream.tar.xz' in os.listdir(data_dir)
+    #except AssertionError:
+    #    print('down-stream dataset is being downloaded')
+    #    s3.download_file(BUCKET_NAME, PRETEXT_DATA, PRETEXT_DATA)    
+    #else:
+    #    print('down-stream data is already downloaded')
 
     # data extraction
     try: 

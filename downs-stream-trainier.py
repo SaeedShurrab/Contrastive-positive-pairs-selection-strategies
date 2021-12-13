@@ -8,8 +8,10 @@ import src.models.basemodels as models
 import torch.nn as nn
 from src.modules.downstream.classification import ClassificationModel
 from src.data.downstream.datasets import DownStreamDataModule
-from pytorch_lightning.loggers import MLFlowLogger
+#from pytorch_lightning.loggers import MLFlowLogger
+from src.modules.utils import MLFlowLoggerCheckpointer
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
+from src.modules.utils import parse_weights
 
 
 
@@ -29,7 +31,7 @@ parser.add_argument('--training-scheme', '--ts', type=str, default='linear', met
                           schemes: (linear, fine-tune, from-scratch, transfer-learning)'
 )
 
-parser.add_argument('--ssl-model','--ssl', type=str,default='BYOL',metavar='MODEL',
+parser.add_argument('--ssl-model','--ssl', type=str,default='SimSiam',metavar='MODEL',
                     choices=['BYOL','SimSiam'],
                     help='self-supervised learning model used as pretraining method'
                    )
@@ -68,7 +70,7 @@ parser.add_argument('-m', '--pin-memory', type=bool, default=True, metavar='N',
                    )
 
 # model options
-parser.add_argument('--backbone', '--bb',type=str, default='resnet50', 
+parser.add_argument('--backbone', '--bb',type=str, default='resnet34', 
                     choices=model_names,
                     metavar='BACKBONE', help='model backbone | ' + \
                     'backbones: ('+  ', '.join(model_names) +') \
@@ -85,8 +87,8 @@ parser.add_argument('--learning-rate','--lr', type=float, default=0.01, metavar=
 parser.add_argument('--weight-decay','--wd', type=float, default=0.0, metavar='WD',
                     help='L2 weight decay | default: (0.0)'
                    )
-parser.add_argument('--scheduler','--sc', type=str, default='step', 
-                    choices=['step','exponential'],
+parser.add_argument('--scheduler','--sc', type=str, default='cosine', 
+                    choices=['step','exponential','cosine'],
                     metavar='SCHED', help=' learning rate schduler  | ' + \
                     'schedulers: (step, exponential) | default: (step)' 
                    )
@@ -116,10 +118,10 @@ parser.add_argument('--log-every-n','--le', type=int, default=1, metavar='FREQUE
 
 # logger options
 
-parser.add_argument('-t','--tracking-uri',type=str, default='http://ec2-13-59-105-139.us-east-2.compute.amazonaws.com/', metavar='URI',
+parser.add_argument('-t','--tracking-uri',type=str, default='file:///src/logs', metavar='URI',
                     help='Mlflow tracking uri directory | default: (file:///src/logs)'
                    )
-
+#http://ec2-13-59-105-139.us-east-2.compute.amazonaws.com/
 # callbacks options
 parser.add_argument('--monitor-quantity','--mq', type=str, default='val_loss',metavar='MODE',
                    help='quantity to monitor for checkpoint saving default :| (train_loss)'
@@ -176,37 +178,46 @@ model = ClassificationModel(model=models.__dict__[args.backbone],
                             sched_step_size=args.scheduler_step,
                             sched_gamma=args.scheduler_gamma,
                             output_dim=args.output_dim,
-                            freeze= freeze
+                            freeze= freeze,
+                            max_epochs=args.epochs
                             )
 
-#if args.training_scheme == 'linear' or 'fine-tune':
-#    model.model.load_state_dict(torch.load(args.weights_path),strict = False)['state_dict']  
-#else:
-#    pass
+all_weights = torch.load('./epoch=64-step=26974.ckpt',map_location=torch.device('cpu'))['state_dict']
+ultimate_weights = parse_weights(all_weights)
+
+
+if args.training_scheme in ['linear', 'fine-tune']:
+    model.model.load_state_dict(ultimate_weights,strict = False)
+
+#print(model.model.conv1.block[0].state_dict())
 
 version  = input(f'please specfiy the the current version of SimSiamS expriment and {args.strategy} run: ')
-os.environ['MLFLOW_TRACKING_URI'] = args.tracking_uri
 
 
-mlflow_logger = MLFlowLogger(experiment_name=args.training_scheme, 
-                             tracking_uri=os.environ['MLFLOW_TRACKING_URI'],
-                             run_name=' '.join([args.ssl_model, args.strategy, args.classification_problem]),
-                             tags={'training-scheme': args.training_scheme,
-                                    'ssl-model':args.ssl_model,
-                                    'strategy':args.strategy,
-                                    'classification-problem': args.classification_problem,
-                                    'Version': version,
-                                  }
-                             )
+
+mlflow_logger = MLFlowLoggerCheckpointer(experiment_name=args.training_scheme, 
+                                         tracking_uri=args.tracking_uri,
+                                         run_name=' '.join([args.ssl_model, args.strategy, args.classification_problem]),
+                                         tags={'training-scheme': args.training_scheme,
+                                               'ssl-model':args.ssl_model,
+                                               'strategy':args.strategy,
+                                               'classification-problem': args.classification_problem,
+                                               'Version': version,
+                                              }
+                                        )
+
 checkpoint_callback = ModelCheckpoint(monitor=args.monitor_quantity, 
                                       mode= args.monitor_mode
                                      )
+
 early_stop = EarlyStopping(monitor=args.monitor_quantity, 
                            min_delta=args.es_delta,
                            mode=args.monitor_mode, 
                            patience=args.es_patience
                           )
+
 lr_logger = LearningRateMonitor(logging_interval='epoch')
+
 trainer = pl.Trainer(gpus=args.ngpus,
                      logger=mlflow_logger, 
                      max_epochs=args.epochs,
@@ -218,37 +229,14 @@ trainer = pl.Trainer(gpus=args.ngpus,
 
 
 if __name__ == '__main__':
-    with open('/src/logs/' + mlflow_logger.experiment_id +'/'+mlflow_logger.run_id+ '/artifacts/args.json', 'w') as fp:
+    with open('args.json', 'w') as fp:
         json.dump(vars(args), fp)
-     
     trainer.fit(model=model, datamodule=data_module)
-    trainer.test()
+    os.remove('./args.json')
+    
 
 
-'''
-python --training-scheme linear \
---ssl-model BYOL \
---strategy unrestricted \
---weights-path ./ \
---classification-problem binary \
---data-dir ./data/down-stream \
---batch-size 128 \
---num-workers 8 \
---pin-memory True \
---backbone resnet50 \
---optimizer adam \
---learning-rate 0.01 \
---weight-decay 0.0 \
---scheduler step \
---scheduler-step 5 \
---scheduler-gamma 0.5 \
---ngpus -1 \
---epochs 100 \
---precision 16 \
---log-every-n 1 \
---tracking-uri file:///src/logs \
---monitor_quantity val_loss \
---monitor-mode min \
---es-delta 0.01 \
---es-patience 5 
-'''
+
+# python downs-stream-trainer.py --training-scheme linear --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem binary --data-dir ./data/down-stream --batch-size 128 --pin-memory True --backbone resnet34 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.01 --es-patience 5 --output-dim 3
+
+# python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 64 --pin-memory False --num-workers 0 --backbone resnet34 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 3 

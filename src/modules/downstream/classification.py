@@ -23,7 +23,8 @@ class ClassificationModel(pl.LightningModule):
                 sched_step_size: int = 5,
                 sched_gamma: float = 0.5,
                 output_dim: int = 2,
-                freeze: bool = False
+                freeze: bool = False,
+                max_epochs: int = 50
                 ) -> None:
         super(ClassificationModel, self).__init__()
 
@@ -36,6 +37,7 @@ class ClassificationModel(pl.LightningModule):
         self.scheduler = scheduler
         self.sched_step_size = sched_step_size
         self.sched_gamma = sched_gamma
+        self.max_epochs = max_epochs
 
         if freeze:
             for param in self.model.parameters():
@@ -89,6 +91,9 @@ class ClassificationModel(pl.LightningModule):
         self.log("test_acc", acc, on_epoch= True,on_step=True , logger=True)
         return loss 
 
+    def on_fit_start(self) -> None:
+        self.logger.experiment.log_artifact(self.logger.run_id,'./args.json')
+
 
     def configure_optimizers(self):
         if self.optimizer == 'adam':
@@ -113,7 +118,14 @@ class ClassificationModel(pl.LightningModule):
         elif self.scheduler == 'exponential':
              scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, 
                                                           gamma=self.sched_gamma, verbose=True
-                                                         )  
+                                                         )
+        elif self.scheduler == 'cosine':
+            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer,
+                                                            eta_min=0,
+                                                            T_max=self.max_epochs
+                                                            )
+
+
         elif self.scheduler is None:
             scheduler = None
 

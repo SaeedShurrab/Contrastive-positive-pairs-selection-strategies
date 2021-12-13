@@ -14,3 +14,8 @@ class MLFlowLoggerCheckpointer(MLFlowLogger):
         self.experiment.log_artifact(
             self.run_id, model_checkpoint.best_model_path
         )
+
+
+def parse_weights(state_dict):
+    en_weights = {key[9:]: value for key, value in state_dict.items() if "conv" in key}
+    return en_weights

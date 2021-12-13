@@ -62,7 +62,7 @@ class SimSiamModel(pl.LightningModule):
                                    weight_decay=self.weight_decay
                                    )
         else:
-            raise NameError('optimizer must be eithr sgd or adam')
+            raise NameError('optimizer must be eithr sgd, adam or cosine')
 
 
         if self.scheduler == 'step':

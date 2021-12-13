@@ -67,8 +67,8 @@ parser.add_argument('--learning-rate','--lr', type=float, default=0.01, metavar=
 parser.add_argument('--weight-decay','--wd', type=float, default=0.0, metavar='WD',
                     help='L2 weight decay | default: (0.0)'
                    )
-parser.add_argument('--scheduler','--sc', type=str, default='step', 
-                    choices=['step','exponential'],
+parser.add_argument('--scheduler','--sc', type=str, default='cosine', 
+                    choices=['step','exponential','cosine'],
                     metavar='SCHED', help=' learning rate schduler  | ' + \
                     'schedulers: (step, exponential) | default: (step)' 
                    )
@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
 
 '''
-python simsiam-trainer.py --strategy unrestricted --data-dir /datastores/pretext --batch-size 64 --num-workers 8 --pin-memory True --backbone resnet34 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler step --scheduler-step 5 --scheduler-gamma 0.5 --ngpus -1 --epochs 100 --precision 16
+python simsiam-trainer.py --strategy unrestricted --data-dir /datastores/pretext --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet34 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16
 '''
 
 
