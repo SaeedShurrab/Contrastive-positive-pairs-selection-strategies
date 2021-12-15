@@ -162,7 +162,7 @@ data_module = DownStreamDataModule(data_dir=data_dir,
                                   )
 
 
-if args.training_scheme == 'linear' or 'transfer-learning':
+if args.training_scheme in ['linear', 'transfer-learning']:
     freeze = True
 else:
     freeze = False
@@ -239,4 +239,4 @@ if __name__ == '__main__':
 
 # python downs-stream-trainer.py --training-scheme linear --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem binary --data-dir ./data/down-stream --batch-size 128 --pin-memory True --backbone resnet34 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.01 --es-patience 5 --output-dim 3
 
-# python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 64 --pin-memory False --num-workers 0 --backbone resnet34 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 3 
+# python downs-stream-trainier.py --training-scheme linear --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory False --num-workers 0 --backbone resnet34 --optimizer adam --learning-rate 0.0001 --weight-decay 0.001 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 3 
