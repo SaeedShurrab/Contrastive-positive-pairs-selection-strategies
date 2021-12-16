@@ -4,3 +4,6 @@ test.py
 __pycache__/
 venv/
 *.ckpt
+logs/
+mlruns/
+args.json

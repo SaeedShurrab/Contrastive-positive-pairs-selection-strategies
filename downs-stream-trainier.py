@@ -12,8 +12,8 @@ from src.data.downstream.datasets import DownStreamDataModule
 from src.modules.utils import MLFlowLoggerCheckpointer
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
 from src.modules.utils import parse_weights
-
-
+from torchvision.models import resnet34 
+from torch.nn import functional as F
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -150,8 +150,8 @@ elif args.classification_problem ==' multi-class':
     data_dir = os.path.join(args.data_dir,'multi-class')
 
 elif args.classification_problem == 'grading':
-    disise = input('please enter disease name from (CSR, MRO, GA, CNV, FMH, PMH, VMT): ')
-    data_dir = os.path.join(args.data_dir,'grading',disise)   
+    disease = input('please enter disease name from (CSR, MRO, GA, CNV, FMH, PMH, VMT): ')
+    data_dir = os.path.join(args.data_dir,'grading',disease)   
 
 data_module = DownStreamDataModule(data_dir=data_dir,
                                    train_transforms=None,
@@ -170,7 +170,7 @@ else:
 
 
 model = ClassificationModel(model=models.__dict__[args.backbone],
-                            criterion=nn.CrossEntropyLoss,
+                            criterion=F.cross_entropy,
                             optimizer=args.optimizer,
                             learning_rate=args.learning_rate,
                             weight_decay=args.weight_decay,
@@ -189,7 +189,7 @@ ultimate_weights = parse_weights(all_weights)
 if args.training_scheme in ['linear', 'fine-tune']:
     model.model.load_state_dict(ultimate_weights,strict = False)
 
-#print(model.model.conv1.block[0].state_dict())
+
 
 version  = input(f'please specfiy the the current version of SimSiamS expriment and {args.strategy} run: ')
 
@@ -239,4 +239,4 @@ if __name__ == '__main__':
 
 # python downs-stream-trainer.py --training-scheme linear --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem binary --data-dir ./data/down-stream --batch-size 128 --pin-memory True --backbone resnet34 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.01 --es-patience 5 --output-dim 3
 
-# python downs-stream-trainier.py --training-scheme linear --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory False --num-workers 0 --backbone resnet34 --optimizer adam --learning-rate 0.0001 --weight-decay 0.001 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 3 
+# python downs-stream-trainier.py --training-scheme  --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory False --num-workers 0 --backbone resnet34 --optimizer adam --learning-rate 0.0001 --weight-decay 0.001 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 5

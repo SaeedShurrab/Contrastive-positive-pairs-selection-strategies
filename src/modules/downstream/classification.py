@@ -30,7 +30,7 @@ class ClassificationModel(pl.LightningModule):
 
         self.save_hyperparameters()
         self.model = model()
-        self.criterion = criterion()
+        self.criterion = criterion
         self.optimizer = optimizer.lower()
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
@@ -38,12 +38,13 @@ class ClassificationModel(pl.LightningModule):
         self.sched_step_size = sched_step_size
         self.sched_gamma = sched_gamma
         self.max_epochs = max_epochs
+        self.output_dim = output_dim
 
         if freeze:
             for param in self.model.parameters():
                 param.requires_grad = False
         
-        self.model.fc = nn.Linear(self.model.fc.in_features,output_dim)
+        self.model.fc = nn.Linear(self.model.fc.in_features,self.output_dim)
 
     def forward(self,
                 x: Tensor
@@ -59,8 +60,8 @@ class ClassificationModel(pl.LightningModule):
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
         
-        self.log("train_loss", loss, on_epoch= True,on_step=True , logger=True)
-        self.log("train_acc", acc, on_epoch= True,on_step=True , logger=True)
+        self.log("train_loss", loss, on_epoch= True,on_step=True , logger=True,prog_bar=True)
+        self.log("train_acc", acc, on_epoch= True,on_step=True , logger=True,prog_bar=True)
         return loss
 
     
@@ -73,8 +74,8 @@ class ClassificationModel(pl.LightningModule):
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
 
-        self.log("val_loss", loss, on_epoch= True,on_step=True , logger=True)
-        self.log("val_acc", acc, on_epoch= True,on_step=True , logger=True)
+        self.log("val_loss", loss, on_epoch= True,on_step=True , logger=True, prog_bar=True)
+        self.log("val_acc", acc, on_epoch= True,on_step=True , logger=True, prog_bar=True)
         return loss
 
 
@@ -87,8 +88,8 @@ class ClassificationModel(pl.LightningModule):
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
 
-        self.log("test_loss", loss, on_epoch= True,on_step=True , logger=True)
-        self.log("test_acc", acc, on_epoch= True,on_step=True , logger=True)
+        self.log("test_loss", loss, on_epoch= True,on_step=True , logger=True,prog_bar=True)
+        self.log("test_acc", acc, on_epoch= True,on_step=True , logger=True, prog_bar=True)
         return loss 
 
     def on_fit_start(self) -> None:
