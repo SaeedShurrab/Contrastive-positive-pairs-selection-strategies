@@ -11,7 +11,8 @@ from src.data.pretext.datasets import UnrestrictedDataModule
 from src.data.pretext.datasets import XYScansDataModule
 from src.data.pretext.datasets import ConsicutiveSessionsDataModule
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
-import src.models.basemodels as models
+#import src.models.basemodels as models
+import torchvision.models as models
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")

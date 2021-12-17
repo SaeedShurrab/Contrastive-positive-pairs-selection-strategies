@@ -4,7 +4,7 @@ import argparse
 import mlflow
 import torch
 import pytorch_lightning as pl
-import src.models.basemodels as models
+#import src.models.basemodels as models
 import torch.nn as nn
 from src.modules.downstream.classification import ClassificationModel
 from src.data.downstream.datasets import DownStreamDataModule
@@ -12,8 +12,9 @@ from src.data.downstream.datasets import DownStreamDataModule
 from src.modules.utils import MLFlowLoggerCheckpointer
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
 from src.modules.utils import parse_weights
-from torchvision.models import resnet34 
 from torch.nn import functional as F
+
+import torchvision.models as models
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -239,4 +240,4 @@ if __name__ == '__main__':
 
 # python downs-stream-trainer.py --training-scheme linear --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem binary --data-dir ./data/down-stream --batch-size 128 --pin-memory True --backbone resnet34 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.01 --es-patience 5 --output-dim 3
 
-# python downs-stream-trainier.py --training-scheme  --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory False --num-workers 0 --backbone resnet34 --optimizer adam --learning-rate 0.0001 --weight-decay 0.001 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 5
+# python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.0001 --weight-decay 0.001 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 3
