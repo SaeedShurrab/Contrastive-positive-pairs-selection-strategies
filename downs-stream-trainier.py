@@ -146,13 +146,16 @@ args = parser.parse_args()
 
 if args.classification_problem == 'binary':
     data_dir = os.path.join(args.data_dir,'binary')
+    print(data_dir)
 
 elif args.classification_problem ==' multi-class':
     data_dir = os.path.join(args.data_dir,'multi-class')
+    print(data_dir)
 
 elif args.classification_problem == 'grading':
     disease = input('please enter disease name from (CSR, MRO, GA, CNV, FMH, PMH, VMT): ')
-    data_dir = os.path.join(args.data_dir,'grading',disease)   
+    data_dir = os.path.join(args.data_dir,'grading',disease)  
+    print(data_dir) 
 
 data_module = DownStreamDataModule(data_dir=data_dir,
                                    form=args.classification_problem,
@@ -241,6 +244,6 @@ if __name__ == '__main__':
 
 
 
-# python downs-stream-trainer.py --training-scheme linear --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem binary --data-dir ./data/down-stream --batch-size 128 --pin-memory True --backbone resnet34 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.01 --es-patience 5 --output-dim 3
+# python downs-stream-trainer.py --training-scheme linear --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem binary --data-dir ./data/down-stream --batch-size 128 --pin-memory True --backbone resnet34 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.01 --es-patience 5 --output-dim 2
 
-# python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.0001 --weight-decay 0.001 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 3
+# python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem binary --data-dir ./data/down-stream --batch-size 32 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.01 --weight-decay 0.001 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 --output-dim 2

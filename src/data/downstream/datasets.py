@@ -56,7 +56,7 @@ class ClassificationDataset(Dataset):
 
 
         if self.form == 'binary':
-            label = torch.tensor([0]) if image.split('/')[-2] == 'Normal' else torch.tensor([1])
+            label = torch.tensor(0) if image.split('/')[-2] == 'Normal' else torch.tensor(1)
             image = self.transform(Image.open(image))
         
         elif self.form == 'multi-class':
