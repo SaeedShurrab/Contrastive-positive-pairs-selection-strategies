@@ -16,15 +16,15 @@ train_transform = T.Compose([T.Resize((224,224)),
                                             T.RandomAffine(degrees=0, shear=10, scale=(1,1))], p=1),
                              T.RandomHorizontalFlip(p=0.5),
                              T.ToTensor(),
-                             T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
-                                         std=torch.tensor([0.1228,0.1228,0.1228])) 
+                             #T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
+                             #            std=torch.tensor([0.1228,0.1228,0.1228])) 
                         ])
 
 
 val_test_transform = T.Compose([T.Resize((224,224)),
                                 T.ToTensor(),
-                                T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
-                                             std=torch.tensor([0.1228,0.1228,0.1228])), 
+                                #T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
+                                #             std=torch.tensor([0.1228,0.1228,0.1228])), 
                         ])
 
 
