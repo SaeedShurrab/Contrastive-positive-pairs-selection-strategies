@@ -56,7 +56,7 @@ class ClassificationModel(pl.LightningModule):
                       batch_idx: int
                      ) -> float:
         input, label = batch
-        prediction = self.model(input)
+        prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
         
@@ -70,7 +70,7 @@ class ClassificationModel(pl.LightningModule):
                       batch_idx: int
                      ) -> float:
         input,label = batch
-        prediction = self.model(input)
+        prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
 
@@ -84,7 +84,7 @@ class ClassificationModel(pl.LightningModule):
                   batch_idx: int
                  ) -> float:
         input, label = batch
-        prediction = self.model(input)
+        prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
 
