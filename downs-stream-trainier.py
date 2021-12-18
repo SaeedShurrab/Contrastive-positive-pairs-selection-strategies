@@ -155,7 +155,8 @@ elif args.classification_problem == 'grading':
     data_dir = os.path.join(args.data_dir,'grading',disease)   
 
 data_module = DownStreamDataModule(data_dir=data_dir,
-                                   train_transforms=None,
+                                   form=args.classification_problem,
+                                   training_transforms=None,
                                    val_test_transforms=None,
                                    batch_size=args.batch_size,
                                    num_workers=args.num_workers,
