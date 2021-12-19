@@ -1,6 +1,7 @@
 from typing import Optional, List
 
 from torch import Tensor
+import torch
 import torch.nn as nn
 import torch.optim as optim
 
