@@ -7,10 +7,8 @@ import torch.optim as optim
 
 import pytorch_lightning as pl
 
-from torchmetrics.functional import  accuracy, precision,recall, specificity
-
-
-
+from torchmetrics.functional.classification import  accuracy, precision,recall, specificity, f1
+from torchmetrics import Accuracy, Precision
 
 
 class ClassificationModel(pl.LightningModule):
@@ -29,8 +27,8 @@ class ClassificationModel(pl.LightningModule):
                 ) -> None:
         super(ClassificationModel, self).__init__()
 
-        self.save_hyperparameters()
-        self.model = model()
+        self.save_hyperparameters() 
+        self.model = model(pretrained=True if freeze else False)
         self.criterion = criterion
         self.optimizer = optimizer.lower()
         self.learning_rate = learning_rate
@@ -47,6 +45,8 @@ class ClassificationModel(pl.LightningModule):
         
         self.model.fc = nn.Linear(self.model.fc.in_features,self.output_dim)
 
+
+
     def forward(self,
                 x: Tensor
                ) -> Tensor:
@@ -60,9 +60,10 @@ class ClassificationModel(pl.LightningModule):
         prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
+
         
-        self.log("train_loss", loss, on_epoch= True,on_step=True , logger=True,prog_bar=True)
-        self.log("train_acc", acc, on_epoch= True,on_step=True , logger=True,prog_bar=True)
+        self.log("train_loss", loss, on_epoch= True,on_step=True , logger=True)
+        self.log("train_acc", acc, on_epoch= True,on_step=True, logger=True)
         return loss
 
     
@@ -74,9 +75,17 @@ class ClassificationModel(pl.LightningModule):
         prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
+        #prec = precision(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        #rec = recall(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        #spec = specificity(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        #f_1 = f1(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
 
-        self.log("val_loss", loss, on_epoch= True,on_step=True , logger=True, prog_bar=True)
-        self.log("val_acc", acc, on_epoch= True,on_step=True , logger=True, prog_bar=True)
+        self.log("val_loss", loss, on_epoch= True, on_step=True, logger=True)
+        self.log("val_acc", acc, on_epoch= True, on_step=True, logger=True)
+        #self.log('val_prec',prec, on_epoch=True, logger=True)
+        #self.log('val_rec',rec, on_epoch=True, logger=True)
+        #self.log('val_spec',spec, on_epoch=True, logger=True)
+        #self.log('val_f1',f_1, on_epoch=True, logger=True)
         return loss
 
 
@@ -88,13 +97,29 @@ class ClassificationModel(pl.LightningModule):
         prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
+        prec = precision(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        rec = recall(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        spec = specificity(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        f_1 = f1(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
 
-        self.log("test_loss", loss, on_epoch= True,on_step=True , logger=True,prog_bar=True)
-        self.log("test_acc", acc, on_epoch= True,on_step=True , logger=True, prog_bar=True)
-        return loss 
+        
+    
+
+        self.log("test_loss", loss, on_epoch= True, logger=True)
+        self.log("test_acc", acc, on_epoch= True, logger=True)
+        self.log('test_prec',prec, on_epoch=True, logger=True)
+        self.log('test_rec',rec, on_epoch=True, logger=True)
+        self.log('test_spec',spec, on_epoch=True, logger=True)
+        self.log('test_f1',f_1, on_epoch=True, logger=True)
+        return  loss
+
+
+
+    
 
     def on_fit_start(self) -> None:
         self.logger.experiment.log_artifact(self.logger.run_id,'./args.json')
+
 
 
     def configure_optimizers(self):

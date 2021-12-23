@@ -5,26 +5,27 @@ from torch import Tensor
 import torchvision.transforms as T
 
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from torchvision.datasets import ImageFolder
 import pytorch_lightning as pl
+from tqdm import tqdm
 
 
 
-train_transform = T.Compose([T.Resize((224,224)),
+train_transform = T.Compose([T.Resize((256,256)),
                              T.RandomApply([T.RandomRotation(degrees=(10)), 
                                             T.RandomAffine(degrees=0, shear=10, scale=(1,1))], p=1),
                              T.RandomHorizontalFlip(p=0.5),
                              T.ToTensor(),
-                             #T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
-                             #            std=torch.tensor([0.1228,0.1228,0.1228])) 
+                             T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
+                                         std=torch.tensor([0.1228,0.1228,0.1228])) 
                         ])
 
 
-val_test_transform = T.Compose([T.Resize((224,224)),
+val_test_transform = T.Compose([T.Resize((256,256)),
                                 T.ToTensor(),
-                                #T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
-                                #             std=torch.tensor([0.1228,0.1228,0.1228])), 
+                                T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
+                                             std=torch.tensor([0.1228,0.1228,0.1228])), 
                         ])
 
 
@@ -61,39 +62,39 @@ class ClassificationDataset(Dataset):
         
         elif self.form == 'multi-class':
             if image.split('/')[-2] == 'Normal':
-                label = torch.tensor([0])
+                label = torch.tensor(0)
                 image = self.transform(Image.open(image)) 
                 
             elif image.split('/')[-2] == 'CNV':
-                label = torch.tensor([1])
+                label = torch.tensor(1)
                 image = self.transform(Image.open(image))  
                 
             elif image.split('/')[-2] == 'CSR':
-                label = torch.tensor([2])
+                label = torch.tensor(2)
                 image = self.transform(Image.open(image))  
                 
             elif image.split('/')[-2] == 'GA':
-                label = torch.tensor([3])
+                label = torch.tensor(3)
                 image = self.transform(Image.open(image))  
                 
             elif image.split('/')[-2] == 'MRO':
-                label = torch.tensor([4])
+                label = torch.tensor(4)
                 image = self.transform(Image.open(image))  
 
             elif image.split('/')[-2] == 'VMT':
-                label = torch.tensor([5])
+                label = torch.tensor(5)
                 image = self.transform(Image.open(image))  
                 
             elif image.split('/')[-2] == 'MH':
-                label = torch.tensor([6])
+                label = torch.tensor(6)
                 image = self.transform(Image.open(image))  
                 
             elif image.split('/')[-2] == 'FMH':
-                label = torch.tensor([6])
+                label = torch.tensor(6)
                 image = self.transform(Image.open(image))  
                 
             elif image.split('/')[-2] == 'PMH':
-                label = torch.tensor([7])
+                label = torch.tensor(7)
                 image = self.transform(Image.open(image))  
 
                 
@@ -159,6 +160,16 @@ class DownStreamDataModule(pl.LightningDataModule):
         if val_test_transforms is None:
             self.val_test_transforms = val_test_transform
 
+        self.setup(stage=None)
+        class_weights = self._get_sampler_weights(self.data_dir,form=self.form)
+
+        samples_weights = self._get_samples_weights(self.train_dataset,class_weights)
+        
+        self.sampler = WeightedRandomSampler(weights=samples_weights,
+                                             num_samples=len(samples_weights),
+                                             replacement=True
+                                             )
+
 
     def setup(self, stage: Optional[str]):
         self.train_dataset = ClassificationDataset(data_dir=os.path.join(self.data_dir,'train'),
@@ -174,8 +185,8 @@ class DownStreamDataModule(pl.LightningDataModule):
                                                   transform=self.val_test_transforms)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size,
-                          shuffle=True, num_workers=self.num_workers, pin_memory= self.pin_memory,
+        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size, sampler=self.sampler,
+                          num_workers=self.num_workers, pin_memory= self.pin_memory, #shuffle=True
                          )
 
     def val_dataloader(self) -> DataLoader:
@@ -187,3 +198,45 @@ class DownStreamDataModule(pl.LightningDataModule):
         return DataLoader(dataset=self.test_dataset,batch_size=self.batch_size,
                           shuffle=False, num_workers=self.num_workers, pin_memory= self.pin_memory
                          )
+
+
+    def _get_samples_weights(self,
+                             dataset, 
+                             class_weights) -> Tensor:
+    
+        samples_weights = [0] * len(dataset)
+    
+        for idx, (data,label) in tqdm(enumerate(dataset)):
+            class_weight = class_weights[label] 
+            samples_weights[idx] = class_weight
+        
+        return samples_weights
+
+
+
+    def _get_sampler_weights(self,
+                             data_dir: str,
+                             form: str
+                            ) -> List[float]:
+    
+        classes =  os.listdir(os.path.join(data_dir,'train'))
+        classes_counts = {}
+        for cls in classes:
+            classes_counts[cls] = 1./len(os.listdir(os.path.join(data_dir,'train',cls)))
+    
+        if form == 'binary':
+            labels = {'Normal': 0, 'Abnormal': 1}
+    
+        elif form == 'multi-class':
+            if len(classes) == 8:
+                labels = {'Normal':0, 'CNV':1, 'CSR':2, 'GA':3, 'MRO':4, 'VMT':5, 'FMH':6,'PMH':7}
+            elif len(classes) == 7:
+                labels = {'Normal':0, 'CNV':1, 'CSR':2, 'GA':3, 'MRO':4, 'VMT':5, 'MH':6}  
+            
+        elif form == 'grading':
+            labels = {'mild': 0, 'moderate': 1, 'severe': 2}
+        
+        weights = list(dict(sorted(classes_counts.items(), key=lambda kv: labels[kv[0]])).values())
+    
+        return weights
+
