@@ -22,7 +22,7 @@ train_transform = T.Compose([T.Resize((300,300)),
                         ])
 
 
-val_test_transform = T.Compose([T.Resize((256,256)),
+val_test_transform = T.Compose([T.Resize((300,300)),
                                 T.ToTensor(),
                                 T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]), 
                                              std=torch.tensor([0.1228,0.1228,0.1228])), 
