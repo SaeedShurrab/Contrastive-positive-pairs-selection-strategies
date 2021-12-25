@@ -265,7 +265,7 @@ if args.dataset == 'down-stream':
                 label = list(labels.loc[labels.Image_Path == idx]['Diagnose'])[0]
 
                 if label == 'Normal':
-                    if args.reduce and (len(os.listdir(os.path.join(multi_class_dir,'train','Normal'))) <= 4000):
+                    if args.reduce and (len(os.listdir(os.path.join(multi_class_dir,'train','Normal'))) <= 15000):
                         shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','Normal'))
 
                     if args.reduce == False:

@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 
 
-train_transform = T.Compose([T.Resize((256,256)),
+train_transform = T.Compose([T.Resize((300,300)),
                              T.RandomApply([T.RandomRotation(degrees=(10)), 
                                             T.RandomAffine(degrees=0, shear=10, scale=(1,1))], p=1),
                              T.RandomHorizontalFlip(p=0.5),

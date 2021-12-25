@@ -28,7 +28,7 @@ class ClassificationModel(pl.LightningModule):
         super(ClassificationModel, self).__init__()
 
         self.save_hyperparameters() 
-        self.model = model(pretrained=True if freeze else False)
+        self.model = model()
         self.criterion = criterion
         self.optimizer = optimizer.lower()
         self.learning_rate = learning_rate
