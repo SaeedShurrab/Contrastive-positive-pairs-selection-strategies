@@ -148,7 +148,7 @@ if args.classification_problem == 'binary':
 
 elif args.classification_problem =='multi-class':
     data_dir = os.path.join(args.data_dir,'multi-class')
-    output_dim = 8
+    output_dim = 7
 
 
 elif args.classification_problem == 'grading':
@@ -187,11 +187,12 @@ model = ClassificationModel(model=models.__dict__[args.backbone],
                             max_epochs=args.epochs
                             )
 
-all_weights = torch.load('./epoch=64-step=26974.ckpt',map_location=torch.device('cpu'))['state_dict']
-ultimate_weights = parse_weights(all_weights)
+
 
 
 if args.training_scheme in ['linear', 'fine-tune']:
+    all_weights = torch.load('./epoch=64-step=26974.ckpt')['state_dict']
+    ultimate_weights = parse_weights(all_weights)
     model.model.load_state_dict(ultimate_weights,strict = True)
 
 
