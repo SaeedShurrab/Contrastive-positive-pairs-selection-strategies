@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 import pytorch_lightning as pl
 
 
-defualt_transforms = T.Compose([T.Resize((224,224)),
+defualt_transforms = T.Compose([T.Resize((300,300)),
                                 T.RandomApply([T.RandomRotation(degrees=(10)), 
                                                T.RandomAffine(degrees=0, shear=10, scale=(1,1))], p=1),
                                 T.RandomHorizontalFlip(p=0.5),
@@ -19,7 +19,7 @@ defualt_transforms = T.Compose([T.Resize((224,224)),
                         ])
 
 
-specific_transforms = T.Compose([T.Resize((224,224)),
+specific_transforms = T.Compose([T.Resize((300,300)),
                                 T.ToTensor(),
                                 T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]),
                                             std=torch.tensor([0.1228,0.1228,0.1228])) 
