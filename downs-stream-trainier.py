@@ -167,10 +167,15 @@ data_module = DownStreamDataModule(data_dir=data_dir,
                                   )
 
 
-if args.training_scheme in ['linear', 'transfer-learning']:
+if args.training_scheme == 'linear':
     freeze = True
+    imagenet = False
+elif args.training_scheme == 'transfer-learning':
+    freeze = False
+    imagenet = True
 else:
     freeze = False
+    imagenet=False
 
 
 
@@ -183,7 +188,8 @@ model = ClassificationModel(model=models.__dict__[args.backbone],
                             sched_step_size=args.scheduler_step,
                             sched_gamma=args.scheduler_gamma,
                             output_dim=output_dim,
-                            freeze= freeze,
+                            freeze=freeze,
+                            imagenet=imagenet, 
                             max_epochs=args.epochs
                             )
 

@@ -7,3 +7,5 @@ venv/
 logs/
 mlruns/
 args.json
+*.jpg
+*.png

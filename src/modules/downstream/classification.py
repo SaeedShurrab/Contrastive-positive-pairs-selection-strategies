@@ -23,12 +23,13 @@ class ClassificationModel(pl.LightningModule):
                 sched_gamma: float = 0.5,
                 output_dim: int = 2,
                 freeze: bool = False,
+                imagenet: bool = False,
                 max_epochs: int = 50
                 ) -> None:
         super(ClassificationModel, self).__init__()
 
         self.save_hyperparameters() 
-        self.model = model()
+        self.model = model(pretrained=imagenet)
         self.criterion = criterion
         self.optimizer = optimizer.lower()
         self.learning_rate = learning_rate
@@ -39,9 +40,19 @@ class ClassificationModel(pl.LightningModule):
         self.max_epochs = max_epochs
         self.output_dim = output_dim
 
+
+
         if freeze:
             for param in self.model.parameters():
                 param.requires_grad = False
+        
+        elif imagenet: 
+            ct = 0
+            for child in self.model.children():
+                ct += 1
+                if ct <= 6:
+                    for param in child.parameters():
+                        param.requires_grad = False
         
         self.model.fc = nn.Linear(self.model.fc.in_features,self.output_dim)
 
@@ -97,10 +108,10 @@ class ClassificationModel(pl.LightningModule):
         prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
-        prec = precision(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
-        rec = recall(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
-        spec = specificity(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
-        f_1 = f1(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        prec = precision(preds=prediction,target=label,num_classes=self.output_dim, average='macro')
+        rec = recall(preds=prediction,target=label,num_classes=self.output_dim, average='macro')
+        spec = specificity(preds=prediction,target=label,num_classes=self.output_dim, average='macro')
+        f_1 = f1(preds=prediction,target=label,num_classes=self.output_dim, average='macro')
 
         
     
