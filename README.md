@@ -125,9 +125,9 @@ The following shows in details the training plan fore each experiments Type:
 
 #### 4- Transfer learning
 
-- [ ] binary
-- [ ] multi-class
-- [ ] grading
+- [x] binary
+- [x] multi-class
+- [x] grading
 
 
 

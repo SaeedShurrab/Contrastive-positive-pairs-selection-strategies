@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
 
 '''
-python simsiam-trainer.py --strategy unrestricted --data-dir /datastores/pretext --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet34 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16
+python simsiam-trainer.py --strategy unrestricted --data-dir /datastores/pretext --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet34 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 5
 '''
 
 
