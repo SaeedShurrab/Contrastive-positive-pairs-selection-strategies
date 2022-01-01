@@ -148,7 +148,7 @@ if args.classification_problem == 'binary':
 
 elif args.classification_problem =='multi-class':
     data_dir = os.path.join(args.data_dir,'multi-class')
-    output_dim = 7
+    output_dim = 8
 
 
 elif args.classification_problem == 'grading':
