@@ -25,7 +25,7 @@ The following shows in details the training plan fore each experiments Type:
 
 ### SimSiam training
 
-- [ ] unrestricted
+- [x] unrestricted
 - [ ] xy-scans
 - [ ] consecutive
 

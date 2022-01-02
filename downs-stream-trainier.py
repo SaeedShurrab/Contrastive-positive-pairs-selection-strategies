@@ -197,9 +197,12 @@ model = ClassificationModel(model=models.__dict__[args.backbone],
 
 
 if args.training_scheme in ['linear', 'fine-tune']:
-    all_weights = torch.load('./epoch=64-step=26974.ckpt')['state_dict']
+    all_weights = torch.load(args.weights_path,map_location='cpu')['state_dict']
+    print('initial loading done--------------------------------------------------------------------')
     ultimate_weights = parse_weights(all_weights)
-    model.model.load_state_dict(ultimate_weights,strict = True)
+    print('parsing done--------------------------------------------------------------------')
+    model.model.load_state_dict(ultimate_weights,strict = False)
+    print(model.model.conv1.weight)
 
 
 
@@ -253,4 +256,4 @@ if __name__ == '__main__':
 
 # python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem multi-class --data-dir ./data/down-stream --batch-size 64 --pin-memory True --backbone resnet18 --optimizer adam --learning-rate 0.000001 --weight-decay 0.1 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.01 --es-patience 6 
 
-# python downs-stream-trainier.py --training-scheme transfer-learning --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 32 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 
+# python downs-stream-trainier.py --training-scheme fine-tune --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=86-step=36104.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 32 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 
