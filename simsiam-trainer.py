@@ -182,14 +182,14 @@ trainer = pl.Trainer(gpus=args.ngpus,
                      log_every_n_steps=args.log_every_n, 
                      progress_bar_refresh_rate=1,
                      callbacks=[checkpoint_callback, lr_logger, early_stop],
-                     auto_lr_find=True
+                     #auto_lr_find=True
                      )
 
 
 if __name__ == '__main__':
     with open('args.json', 'w') as fp:
         json.dump(vars(args), fp)
-    lr_finder = trainer.tune(model,datamodule=data_module)
+    #lr_finder = trainer.tune(model,datamodule=data_module)
     trainer.fit(model=model, datamodule=data_module)
     os.remove('./args.json')
 
@@ -198,8 +198,8 @@ if __name__ == '__main__':
 
 
 
-'''
-python simsiam-trainer.py --strategy unrestricted --data-dir /datastores/pretext --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet18 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 5
-'''
+
+# python simsiam-trainer.py --strategy unrestricted --data-dir /datastores/data/pretext --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet18 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 5
+
 
 
