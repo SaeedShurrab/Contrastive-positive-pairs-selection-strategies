@@ -68,7 +68,7 @@ parser.add_argument('--weight-decay','--wd', type=float, default=0.0, metavar='W
                     help='L2 weight decay | default: (0.0)'
                    )
 parser.add_argument('--scheduler','--sc', default='step', 
-                    choices=['','step','exponential'],
+                    choices=['step','exponential','cosine'],
                     metavar='SCHED', help=' learning rate schduler  | ' + \
                     'schedulers: (step, exponential) | default: (step)' 
                    )
@@ -163,7 +163,7 @@ model = ByolModel(backbone=models.__dict__[args.backbone],
 version  = input(f'please specfiy the the current version of BYOL expriment and {args.strategy} run: ')
 
 
-mlflow_logger = MLFlowLoggerCheckpointer(experiment_name='BYOL1', 
+mlflow_logger = MLFlowLoggerCheckpointer(experiment_name='BYOL', 
                              tracking_uri=args.tracking_uri,
                              run_name=args.strategy,
                              tags={'Version': version}
@@ -200,27 +200,4 @@ if __name__ == '__main__':
 
 
 
-'''
-python byol-trainer.py --strategy unrestricted \
---data-dir ./data/pretext \
---batch-size 128 \
---num-workers 8 \
---pin-memory True \
---target-decay 0.996 \
---backbone resnet50 \
---optimizer adam \
---learning-rate 0.01 \
---weight-decay 0.0 \
---scheduler step \
---scheduler-step 5 \
---scheduler-gamma 0.5 \
---ngpus -1 \
---epochs 100 \
---precision 16 \
---log-every-n 1 \
---tracking-uri file:///src/logs \
---monitor-quantity train_loss \
---monitor-mode min \
---es-delta 0.01 \
---es-patience 5 
-'''
+# python byol-trainer.py --strategy unrestricted --data-dir ./data/pretext --batch-size 128 --num-workers 8 --pin-memory True --target-decay 0.996 --backbone resnet34 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler cosine --scheduler-step 5 --scheduler-gamma 0.5 --ngpus -1 --epochs 100 --precision 16  --es-delta 0.01 --es-patience 5 

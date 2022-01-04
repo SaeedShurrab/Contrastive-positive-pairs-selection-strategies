@@ -21,7 +21,8 @@ class ByolModel(pl.LightningModule):
                 weight_decay: float = 0.0,
                 scheduler: Optional[str] = 'step',
                 sched_step_size: int = 5,
-                sched_gamma: float = 0.5
+                sched_gamma: float = 0.5,
+                max_epochs: int =100
                 ) -> None:
         super(ByolModel, self).__init__()
 
@@ -35,6 +36,7 @@ class ByolModel(pl.LightningModule):
         self.scheduler = scheduler
         self.sched_step_size = sched_step_size
         self.sched_gamma = sched_gamma
+        self.max_epochs = max_epochs
 
     def training_step(self, 
                       batch: List[Tensor], 
@@ -81,7 +83,12 @@ class ByolModel(pl.LightningModule):
         elif self.scheduler == 'exponential':
              scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, 
                                                           gamma=self.sched_gamma, verbose=True
-                                                         )  
+                                                         ) 
+        elif self.scheduler == 'cosine':
+            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer,
+                                                            eta_min=0,
+                                                            T_max=self.max_epochs
+                                                            ) 
         elif self.scheduler is None:
             scheduler = None
 
