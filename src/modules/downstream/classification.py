@@ -29,7 +29,7 @@ class ClassificationModel(pl.LightningModule):
         super(ClassificationModel, self).__init__()
 
         self.save_hyperparameters() 
-        self.model = model(pretrained=imagenet)
+        self.model = model(pretrained=imagenet,num_classes = output_dim)
         self.criterion = criterion
         self.optimizer = optimizer.lower()
         self.learning_rate = learning_rate
@@ -43,8 +43,9 @@ class ClassificationModel(pl.LightningModule):
 
 
         if freeze:
-            for param in self.model.parameters():
-                param.requires_grad = False
+            for name, param in model.named_parameters():
+                if name not in ['fc.weight', 'fc.bias']:
+                    param.requires_grad = False
         
         elif imagenet: 
             ct = 0
@@ -54,7 +55,7 @@ class ClassificationModel(pl.LightningModule):
                     for param in child.parameters():
                         param.requires_grad = False
         
-        self.model.fc = nn.Linear(self.model.fc.in_features,self.output_dim)
+        
 
 
 
@@ -108,10 +109,10 @@ class ClassificationModel(pl.LightningModule):
         prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
-        prec = precision(preds=prediction,target=label,num_classes=self.output_dim, average='macro')
-        rec = recall(preds=prediction,target=label,num_classes=self.output_dim, average='macro')
-        spec = specificity(preds=prediction,target=label,num_classes=self.output_dim, average='macro')
-        f_1 = f1(preds=prediction,target=label,num_classes=self.output_dim, average='macro')
+        prec = precision(preds=prediction,target=label,num_classes=self.output_dim, average='micro')
+        rec = recall(preds=prediction,target=label,num_classes=self.output_dim, average='micro')
+        spec = specificity(preds=prediction,target=label,num_classes=self.output_dim, average='micro')
+        f_1 = f1(preds=prediction,target=label,num_classes=self.output_dim, average='micro')
 
         
     

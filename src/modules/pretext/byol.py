@@ -55,9 +55,6 @@ class ByolModel(pl.LightningModule):
     
     def on_before_zero_grad(self, _) -> None:
         self.learner.update_target_network()
-
-    def on_fit_start(self) -> None:
-        self.logger.experiment.log_artifact('/src/args.json')
     
 
     def configure_optimizers(self):

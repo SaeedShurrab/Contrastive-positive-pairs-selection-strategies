@@ -169,7 +169,7 @@ mlflow_logger = MLFlowLoggerCheckpointer(experiment_name='BYOL',
                              tags={'Version': version}
                              )
 checkpoint_callback = ModelCheckpoint(monitor=args.monitor_quantity, 
-                                      mode= args.monitor_mode,filename='checkpoint'
+                                      mode= args.monitor_mode
                                      )
 early_stop = EarlyStopping(monitor=args.monitor_quantity, 
                            min_delta=args.es_delta,

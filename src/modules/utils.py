@@ -1,4 +1,5 @@
-
+from typing import Dict
+from torch import Tensor
 from pytorch_lightning.loggers import MLFlowLogger
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 
@@ -16,6 +17,17 @@ class MLFlowLoggerCheckpointer(MLFlowLogger):
         )
 
 
-def parse_weights(state_dict):
-    weights = {key[9:]: value for key, value in state_dict.items() if "conv" in key}
+
+def parse_weights(weights: Dict[str,Tensor]) -> Dict[str,Tensor]:
+    
+    for k in list(weights.keys()):
+        
+        if k.startswith('backbone.'):
+            
+            if k.startswith('backbone') and not k.startswith('backbone.fc'):
+                
+                weights[k[len("backbone."):]] = weights[k]
+                
+        del weights[k]
+        
     return weights
