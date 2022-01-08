@@ -43,7 +43,7 @@ class ClassificationModel(pl.LightningModule):
 
 
         if freeze:
-            for name, param in model.named_parameters():
+            for name, param in self.model.named_parameters():
                 if name not in ['fc.weight', 'fc.bias']:
                     param.requires_grad = False
         
