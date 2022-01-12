@@ -32,7 +32,7 @@ class NegativeCosineSimilarity(nn.Module):
                   p: Tensor,
                   z: Tensor,
                  ) -> Tensor:
-        z = z.detach
+        z = z.detach()
         loss = - F.cosine_similarity(p, z, dim=-1).mean()
         return loss
         
@@ -143,10 +143,10 @@ class EncodProject(nn.Module):
 class SimSiam(nn.Module):
     def __init__(self,
                  model: nn.Module,
-                 projector_hidden_dim: int = 2048,
-                 projector_output_dim: int = 2048,
-                 predictor_hidden_dim: int = 512,
-                 predictor_output_dim: int = 2048
+                 projector_hidden_dim: int = 512,
+                 projector_output_dim: int = 512,
+                 predictor_hidden_dim: int = 128,
+                 predictor_output_dim: int = 512
                 ) -> None: 
         super(SimSiam, self).__init__()
         
