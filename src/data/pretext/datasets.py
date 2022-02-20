@@ -10,11 +10,11 @@ import pytorch_lightning as pl
 
 
 defualt_transforms = T.Compose([T.Resize((300,300)),
-                                T.RandomApply([T.RandomRotation(degrees=(10)), 
+                                T.RandomApply([T.RandomRotation(degrees=(15)), 
                                                T.RandomAffine(degrees=0, shear=20, scale=(1,1))], p=1),
                                 T.RandomHorizontalFlip(p=0.5),
-                                T.RandomApply([T.ColorJitter(brightness=0.5, hue=.3),
-                                    T.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 5))], p= 5),
+                                #T.RandomApply([T.ColorJitter(brightness=0.5, hue=.3),
+                                #    T.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 5))], p= 5),
                                 T.ToTensor(),
                                 T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]),
                                             std=torch.tensor([0.1228,0.1228,0.1228])) 
