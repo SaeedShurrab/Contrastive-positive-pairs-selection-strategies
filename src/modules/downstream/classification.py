@@ -43,7 +43,7 @@ class ClassificationModel(pl.LightningModule):
 
 
         if freeze:
-            for name, param in model.named_parameters():
+            for name, param in self.model.named_parameters():
                 if name not in ['fc.weight', 'fc.bias']:
                     param.requires_grad = False
         
@@ -55,9 +55,9 @@ class ClassificationModel(pl.LightningModule):
                     for param in child.parameters():
                         param.requires_grad = False
         
-        
+    
 
-
+        #self.model.fc = nn.Linear(self.model.fc.in_features,self.output_dim)
 
     def forward(self,
                 x: Tensor

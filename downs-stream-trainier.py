@@ -33,12 +33,12 @@ parser.add_argument('--training-scheme', '--ts', type=str, default='linear', met
 )
 
 parser.add_argument('--ssl-model','--ssl', type=str,default='SimSiam',metavar='MODEL',
-                    choices=['BYOL','SimSiam'],
+                    choices=['BYOL','SimSiam','none'],
                     help='self-supervised learning model used as pretraining method'
                    )
 
 parser.add_argument('-s','--strategy', type=str, default='unrestricted', metavar='TRAINING-PLAN',
-                    choices=['unrestricted', 'xyscans', 'consecutive'],
+                    choices=['unrestricted', 'xyscans', 'consecutive','none'],
                     help='positive pairs selection strategy | \
                     strategies: (unrestricted, xyscans, consecutive) \
                     | default: (unrestricted)' 
@@ -63,7 +63,7 @@ parser.add_argument('-d','--data-dir', type=str,
 parser.add_argument('-b','--batch-size', type=int, default=32,
                     help='total number of gpus used during training | default: (256)'
                    )
-parser.add_argument('-w', '--num-workers', type=int, default=8, metavar='N',
+parser.add_argument('-w', '--num-workers', type=int, default=4, metavar='N',
                     help='number of data loading workers | default: (8)'
                    )
 parser.add_argument('-m', '--pin-memory', type=bool, default=True, metavar='N',
@@ -110,13 +110,13 @@ parser.add_argument('-e','--epochs', type=int, default=100, metavar='N',
 parser.add_argument('-p','--precision', type=int, default=16, metavar='N',
                     help='auotomatic mexed precesion mode applied during the training  | default: (16)'
                    )
-parser.add_argument('--log-every-n','--le', type=int, default=1, metavar='FREQUENCY',
+parser.add_argument('--log-every-n','--le', type=int, default=10, metavar='FREQUENCY',
                     help='logging frequency every n steps  | default: (1)'
                    )
 
 # logger options
 
-parser.add_argument('-t','--tracking-uri',type=str, default='file:///src/logs', metavar='URI',
+parser.add_argument('-t','--tracking-uri',type=str, default='http://ec2-13-59-105-139.us-east-2.compute.amazonaws.com/', metavar='URI',
                     help='Mlflow tracking uri directory | default: (file:///src/logs)'
                    )
 #http://ec2-13-59-105-139.us-east-2.compute.amazonaws.com/
@@ -194,10 +194,10 @@ model = ClassificationModel(model=models.__dict__[args.backbone],
                             )
 
 
-
+print(model.model.fc)
 
 if args.training_scheme in ['linear', 'fine-tune']:
-    all_weights = torch.load(args.weights_path,map_location='cpu')['state_dict']
+    all_weights = torch.load(args.weights_path)['state_dict']
     print('initial loading done--------------------------------------------------------------------')
     ultimate_weights = parse_weights(all_weights)
     print('parsing done--------------------------------------------------------------------')
@@ -222,7 +222,9 @@ mlflow_logger = MLFlowLoggerCheckpointer(experiment_name=args.training_scheme,
                                         )
 
 checkpoint_callback = ModelCheckpoint(monitor=args.monitor_quantity, 
-                                      mode= args.monitor_mode
+                                      mode= args.monitor_mode, 
+                                      filename='checkpoint',
+                                      
                                      )
 
 early_stop = EarlyStopping(monitor=args.monitor_quantity, 
@@ -248,12 +250,12 @@ if __name__ == '__main__':
         json.dump(vars(args), fp)
     lr_finder = trainer.tune(model,datamodule=data_module)
     trainer.fit(model=model, datamodule=data_module)
-    trainer.test(datamodule=data_module)
+    trainer.test(datamodule=data_module,ckpt_path='best')
     os.remove('./args.json')
     
 
 
 
-# python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=64-step=26974.ckpt --classification-problem multi-class --data-dir ./data/down-stream --batch-size 64 --pin-memory True --backbone resnet18 --optimizer adam --learning-rate 0.000001 --weight-decay 0.1 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.01 --es-patience 6 
+# python downs-stream-trainier.py --training-scheme fine-tune --ssl-model SimSiam --strategy consecutive --weights-path ./epoch=93-step=25285.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory True --backbone resnet18 --optimizer adam --learning-rate 0.000002 --weight-decay 0.001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 5
 
 # python downs-stream-trainier.py --training-scheme fine-tune --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=86-step=36104.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 32 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 

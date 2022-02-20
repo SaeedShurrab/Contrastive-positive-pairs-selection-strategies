@@ -11,7 +11,7 @@ from src.data.downstream.utils import keep_number
 from tqdm import tqdm
 
 splits = ['train', 'val', 'test']
-random.seed(24)
+random.seed(1256)
 try:
     os.mkdir('data')
 except:
