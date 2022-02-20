@@ -36,7 +36,7 @@ parser.add_argument('-s','--strategy', type=str, default='unrestricted',
 
 # data loading options
 parser.add_argument('-d','--data-dir', type=str, 
-                    default=os.path.join(os.curdir,'data','pretext'),
+                    default=os.path.join('/','datastores','pretext'),
                     metavar='DIR', help='path to the training data | default: (./data/pretext)'
                    )
 parser.add_argument('-b','--batch-size', type=int, default=256,
@@ -169,11 +169,11 @@ mlflow_logger = MLFlowLoggerCheckpointer(experiment_name='SimSiam',
 checkpoint_callback = ModelCheckpoint(monitor=args.monitor_quantity, 
                                       mode= args.monitor_mode
                                      )
-early_stop = EarlyStopping(monitor=args.monitor_quantity, 
-                           min_delta=args.es_delta,
-                           mode=args.monitor_mode, 
-                           patience=args.es_patience
-                          )
+#early_stop = EarlyStopping(monitor=args.monitor_quantity, 
+#                           min_delta=args.es_delta,
+#                           mode=args.monitor_mode, 
+#                           patience=args.es_patience
+#                          )
 lr_logger = LearningRateMonitor(logging_interval='epoch')
 trainer = pl.Trainer(gpus=args.ngpus,
                      logger=mlflow_logger, 
@@ -181,7 +181,7 @@ trainer = pl.Trainer(gpus=args.ngpus,
                      precision=args.precision, 
                      log_every_n_steps=args.log_every_n, 
                      progress_bar_refresh_rate=1,
-                     callbacks=[checkpoint_callback, lr_logger, early_stop],
+                     callbacks=[checkpoint_callback, lr_logger]#, early_stop],
                      #auto_lr_find=True
                      )
 
@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
 
 
-# python simsiam-trainer.py --strategy unrestricted --data-dir /datastores/data/pretext --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet18 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.003 --es-patience 3
+# python simsiam-trainer.py --strategy consecutive --data-dir /datastores/pretext/ --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet18 --optimizer sgd --learning-rate 0.005 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 10
 
 
 
