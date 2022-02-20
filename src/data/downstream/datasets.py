@@ -14,10 +14,10 @@ from tqdm import tqdm
 
 train_transform = T.Compose([T.Resize((300,300)),
                              T.RandomApply([T.RandomRotation(degrees=(10)), 
-                                            T.RandomAffine(degrees=0, shear=20, scale=(1,1))], p=1),
+                                            T.RandomAffine(degrees=0, shear=15, scale=(1,1))], p=1),
                              T.RandomHorizontalFlip(p=0.5),
-                             T.RandomApply([T.ColorJitter(brightness=0.5, hue=.3),
-                                            T.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 5))], p= 5),
+                             #T.RandomApply([T.ColorJitter(brightness=0.5, hue=.3),
+                             #               T.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 5))], p= 5),
                              T.ToTensor(),
                              T.Normalize(mean=torch.tensor([0.1123,0.1123,0.1123]),
                                          std=torch.tensor([0.1228,0.1228,0.1228])) 
@@ -163,15 +163,15 @@ class DownStreamDataModule(pl.LightningDataModule):
         if val_test_transforms is None:
             self.val_test_transforms = val_test_transform
 
-        self.setup(stage=None)
-        class_weights = self._get_sampler_weights(self.data_dir,form=self.form)
+        #self.setup(stage=None)
+        #class_weights = self._get_sampler_weights(self.data_dir,form=self.form)
 
-        samples_weights = self._get_samples_weights(self.train_dataset,class_weights)
+        #samples_weights = self._get_samples_weights(self.train_dataset,class_weights)
         
-        self.sampler = WeightedRandomSampler(weights=samples_weights,
-                                             num_samples=len(samples_weights),
-                                             replacement=True
-                                             )
+        #self.sampler = WeightedRandomSampler(weights=samples_weights,
+        #                                     num_samples=len(samples_weights),
+        #                                     replacement=True
+        #                                     )
 
 
     def setup(self, stage: Optional[str]):
@@ -188,13 +188,13 @@ class DownStreamDataModule(pl.LightningDataModule):
                                                   transform=self.val_test_transforms)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size, sampler=self.sampler,
-                          num_workers=self.num_workers, pin_memory= self.pin_memory, #shuffle=True
+        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size, #sampler=self.sampler,
+                          num_workers=self.num_workers, pin_memory= self.pin_memory, shuffle=True
                          )
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.val_dataset,batch_size=self.batch_size,
-                          shuffle=True, num_workers=self.num_workers, pin_memory= self.pin_memory
+        return DataLoader(dataset=self.val_dataset,batch_size=self.batch_size, 
+                          shuffle=False, num_workers=self.num_workers, pin_memory= self.pin_memory
                          )
 
     def test_dataloader(self) -> DataLoader:

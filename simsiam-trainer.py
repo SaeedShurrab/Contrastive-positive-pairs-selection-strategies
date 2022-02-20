@@ -95,7 +95,7 @@ parser.add_argument('--log-every-n','--le', type=int, default=1, metavar='FREQUE
 
 # logger options
 
-parser.add_argument('-t','--tracking-uri',type=str, default='http://ec2-13-59-105-139.us-east-2.compute.amazonaws.com', metavar='URI',
+parser.add_argument('-t','--tracking-uri',type=str, default='file:///src/logs', metavar='URI',
                     help='Mlflow tracking uri directory | default: (file:///src/logs)'
                    )
 
@@ -199,7 +199,11 @@ if __name__ == '__main__':
 
 
 
+<<<<<<< HEAD
 # python simsiam-trainer.py --strategy consecutive --data-dir /datastores/pretext/ --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet18 --optimizer sgd --learning-rate 0.005 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 10
+=======
+# python simsiam-trainer.py --strategy unrestricted --data-dir ./data/pretext --batch-size 128 --num-workers 0 --pin-memory False --backbone resnet18 --optimizer sgd --learning-rate 0.001 --weight-decay 0.0001 --scheduler cosine --ngpus 0 --epochs 100 --precision 16 --es-delta 0.003 --es-patience 3
+>>>>>>> 3bfbab85f3fdce6e17e96c661cd93d61e3df52c1
 
 
 

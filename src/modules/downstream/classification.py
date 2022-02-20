@@ -55,9 +55,9 @@ class ClassificationModel(pl.LightningModule):
                     for param in child.parameters():
                         param.requires_grad = False
         
-        
+    
 
-
+        #self.model.fc = nn.Linear(self.model.fc.in_features,self.output_dim)
 
     def forward(self,
                 x: Tensor
