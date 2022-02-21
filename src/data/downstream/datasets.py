@@ -114,6 +114,23 @@ class ClassificationDataset(Dataset):
                 label = torch.tensor(2)
                 image = self.transform(Image.open(image))
         
+
+        elif self.form == 'benchmark':
+            if image.split('/')[-2] == 'NORMAL':
+                label = torch.tensor(0)
+                image = self.transform(Image.open(image).convert('RGB')) 
+                
+            elif image.split('/')[-2] == 'CNV':
+                label = torch.tensor(1)
+                image = self.transform(Image.open(image).convert('RGB'))  
+                
+            elif image.split('/')[-2] == 'DME':
+                label = torch.tensor(2)
+                image = self.transform(Image.open(image).convert('RGB'))
+            elif image.split('/')[-2] == 'DRUSEN':
+                label = torch.tensor(3)
+                image = self.transform(Image.open(image).convert('RGB'))
+        
         
         return (image,label)
         
@@ -242,4 +259,6 @@ class DownStreamDataModule(pl.LightningDataModule):
         weights = list(dict(sorted(classes_counts.items(), key=lambda kv: labels[kv[0]])).values())
     
         return weights
+
+
 

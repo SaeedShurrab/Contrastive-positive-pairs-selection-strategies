@@ -49,7 +49,7 @@ parser.add_argument('--weights-path', '--ckpt', type=str,default=os.path.join(os
                    )
 
 parser.add_argument('--classification-problem','--cp', type=str,default='binary',metavar='TASK',
-                    choices=['binary','multi-class','grading'],
+                    choices=['binary','multi-class','grading','benchmark'],
                     help='OCT classification problem to be accomplished | problems: \
                         (binary, multi-class, grading) | default: binary'
                    )
@@ -116,7 +116,7 @@ parser.add_argument('--log-every-n','--le', type=int, default=10, metavar='FREQU
 
 # logger options
 
-parser.add_argument('-t','--tracking-uri',type=str, default='http://ec2-13-59-105-139.us-east-2.compute.amazonaws.com/', metavar='URI',
+parser.add_argument('-t','--tracking-uri',type=str, default='file:///src/logs', metavar='URI',
                     help='Mlflow tracking uri directory | default: (file:///src/logs)'
                    )
 #http://ec2-13-59-105-139.us-east-2.compute.amazonaws.com/
@@ -155,6 +155,12 @@ elif args.classification_problem == 'grading':
     disease = input('please enter disease name from (CSR, MRO, GA, CNV, FMH, PMH, VMT): ')
     data_dir = os.path.join(args.data_dir,'grading',disease)  
     output_dim = 3
+
+
+elif args.classification_problem == 'benchmark':
+    data_dir = os.path.join(args.data_dir,'OCT')
+    output_dim = 4    
+
 
 
 data_module = DownStreamDataModule(data_dir=data_dir,
@@ -197,10 +203,8 @@ model = ClassificationModel(model=models.__dict__[args.backbone],
 print(model.model.fc)
 
 if args.training_scheme in ['linear', 'fine-tune']:
-    all_weights = torch.load(args.weights_path)['state_dict']
-    print('initial loading done--------------------------------------------------------------------')
+    all_weights = torch.load(args.weights_path,map_location='cpu')['state_dict']
     ultimate_weights = parse_weights(all_weights)
-    print('parsing done--------------------------------------------------------------------')
     model.model.load_state_dict(ultimate_weights,strict = False)
     print(model.model.conv1.weight)
 
@@ -258,4 +262,4 @@ if __name__ == '__main__':
 
 # python downs-stream-trainier.py --training-scheme fine-tune --ssl-model SimSiam --strategy consecutive --weights-path ./epoch=93-step=25285.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory True --backbone resnet18 --optimizer adam --learning-rate 0.000002 --weight-decay 0.001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 5
 
-# python downs-stream-trainier.py --training-scheme fine-tune --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=86-step=36104.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 32 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 
+# python downs-stream-trainier.py --training-scheme fine-tune --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=86-step=36104.ckpt --classification-problem benchmark --data-dir ./data/down-stream --batch-size 32 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 

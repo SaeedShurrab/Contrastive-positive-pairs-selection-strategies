@@ -26,8 +26,8 @@ The following shows in details the training plan fore each experiments Type:
 ### SimSiam training
 
 - [x] unrestricted
-- [ ] xy-scans
-- [ ] consecutive
+- [x] xy-scans
+- [x] consecutive
 
 
 
@@ -103,15 +103,15 @@ The following shows in details the training plan fore each experiments Type:
 
 ##### Sim-Siam-xy-scans
 
-- [ ] binary
-- [ ] multi-class
-- [ ] grading
+- [x] binary
+- [x] multi-class
+- [x] grading
 
 ##### SimSiam-consecutive
 
-- [ ] binary
-- [ ] multi-class
-- [ ] grading
+- [x] binary
+- [x] multi-class
+- [x] grading
 
 --------------------------------------------------
 
