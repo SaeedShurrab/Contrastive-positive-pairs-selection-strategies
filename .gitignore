@@ -9,3 +9,4 @@ mlruns/
 args.json
 *.jpg
 *.png
+*.tar.xz
