@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 splits = ['train', 'val', 'test']
 random.seed(1256)
+#1256:multi-class seed for ssl models
 try:
     os.mkdir('data')
 except:
