@@ -212,12 +212,12 @@ class DownStreamDataModule(pl.LightningDataModule):
                                                   transform=self.val_test_transforms)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size, sampler=self.sampler,
+        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size, sampler=self.tarin_sampler,
                           num_workers=self.num_workers, pin_memory= self.pin_memory, shuffle=True
                          )
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.val_dataset,batch_size=self.batch_size, sampler=self.sampler,
+        return DataLoader(dataset=self.val_dataset,batch_size=self.batch_size, sampler=self.valid_sampler,
                           shuffle=False, num_workers=self.num_workers, pin_memory= self.pin_memory
                          )
 

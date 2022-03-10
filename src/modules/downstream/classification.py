@@ -109,10 +109,10 @@ class ClassificationModel(pl.LightningModule):
         prediction = self.forward(input)
         loss = self.criterion(prediction, label)
         acc = accuracy(preds=prediction, target=label)
-        prec = precision(preds=prediction,target=label,num_classes=self.output_dim, average='micro')
-        rec = recall(preds=prediction,target=label,num_classes=self.output_dim, average='micro')
-        spec = specificity(preds=prediction,target=label,num_classes=self.output_dim, average='micro')
-        f_1 = f1(preds=prediction,target=label,num_classes=self.output_dim, average='micro')
+        prec = precision(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        rec = recall(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        spec = specificity(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
+        f_1 = f1(preds=prediction,target=label,num_classes=self.output_dim, average='weighted')
 
         
     
