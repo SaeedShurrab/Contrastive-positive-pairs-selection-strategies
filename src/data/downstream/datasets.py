@@ -180,15 +180,22 @@ class DownStreamDataModule(pl.LightningDataModule):
         if val_test_transforms is None:
             self.val_test_transforms = val_test_transform
 
-        #self.setup(stage=None)
-        #class_weights = self._get_sampler_weights(self.data_dir,form=self.form)
+        self.setup(stage=None)
+        train_weights = self._get_sampler_weights(self.data_dir,form=self.form,split='train')
+        val_weights = self._get_sampler_weights(self.data_dir,form=self.form, split='val')
 
-        #samples_weights = self._get_samples_weights(self.train_dataset,class_weights)
+
+        samples_weights_t = self._get_samples_weights(self.train_dataset,train_weights)
+        samples_weights_v = self._get_samples_weights(self.val_dataset,val_weights)
         
-        #self.sampler = WeightedRandomSampler(weights=samples_weights,
-        #                                     num_samples=len(samples_weights),
-        #                                     replacement=True
-        #                                     )
+        self.tarin_sampler = WeightedRandomSampler(weights=samples_weights_t,
+                                                   num_samples=len(samples_weights_t),
+                                                   replacement=True
+                                                  )
+        self.valid_sampler = WeightedRandomSampler(weights=samples_weights_v,
+                                                   num_samples=len(samples_weights_v),
+                                                   replacement=True
+                                                  )
 
 
     def setup(self, stage: Optional[str]):
@@ -205,12 +212,12 @@ class DownStreamDataModule(pl.LightningDataModule):
                                                   transform=self.val_test_transforms)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size, #sampler=self.sampler,
+        return DataLoader(dataset=self.train_dataset,batch_size=self.batch_size, sampler=self.sampler,
                           num_workers=self.num_workers, pin_memory= self.pin_memory, shuffle=True
                          )
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.val_dataset,batch_size=self.batch_size, 
+        return DataLoader(dataset=self.val_dataset,batch_size=self.batch_size, sampler=self.sampler,
                           shuffle=False, num_workers=self.num_workers, pin_memory= self.pin_memory
                          )
 
@@ -236,13 +243,14 @@ class DownStreamDataModule(pl.LightningDataModule):
 
     def _get_sampler_weights(self,
                              data_dir: str,
-                             form: str
+                             form: str,
+                             split: str
                             ) -> List[float]:
     
-        classes =  os.listdir(os.path.join(data_dir,'train'))
+        classes =  os.listdir(os.path.join(data_dir,split))
         classes_counts = {}
         for cls in classes:
-            classes_counts[cls] = 1./len(os.listdir(os.path.join(data_dir,'train',cls)))
+            classes_counts[cls] = 1./len(os.listdir(os.path.join(data_dir,split,cls)))
     
         if form == 'binary':
             labels = {'Normal': 0, 'Abnormal': 1}
