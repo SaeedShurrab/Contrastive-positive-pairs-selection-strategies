@@ -72,9 +72,9 @@ class ClassificationDataset(Dataset):
                 label = torch.tensor(1)
                 image = self.transform(Image.open(image))  
                 
-            elif image.split('/')[-2] == 'CSR':
-                label = torch.tensor(2)
-                image = self.transform(Image.open(image))  
+            #elif image.split('/')[-2] == 'CSR':
+            #    label = torch.tensor(2)
+            #    image = self.transform(Image.open(image))  
                 
             elif image.split('/')[-2] == 'GA':
                 label = torch.tensor(3)
@@ -88,18 +88,18 @@ class ClassificationDataset(Dataset):
                 label = torch.tensor(5)
                 image = self.transform(Image.open(image))  
                 
-            elif image.split('/')[-2] == 'MH':
-                label = torch.tensor(6)
-                image = self.transform(Image.open(image))  
-                
-            elif image.split('/')[-2] == 'FMH':
-                label = torch.tensor(6)
-                image = self.transform(Image.open(image))  
-                
-            elif image.split('/')[-2] == 'PMH':
-                label = torch.tensor(7)
-                image = self.transform(Image.open(image))  
-
+            #elif image.split('/')[-2] == 'MH':
+            #    label = torch.tensor(6)
+            #    image = self.transform(Image.open(image))  
+            #    pass
+            #elif image.split('/')[-2] == 'FMH':
+            #    label = torch.tensor(6)
+            #    image = self.transform(Image.open(image))  
+            #    pass
+            #elif image.split('/')[-2] == 'PMH':
+            #    label = torch.tensor(7)
+            #    image = self.transform(Image.open(image))  
+            #    pass
                 
         elif self.form == 'grading':
             if image.split('/')[-2] == 'mild':
@@ -257,7 +257,7 @@ class DownStreamDataModule(pl.LightningDataModule):
     
         elif form == 'multi-class':
             if len(classes) == 8:
-                labels = {'Normal':0, 'CNV':1, 'CSR':2, 'GA':3, 'MRO':4, 'VMT':5, 'FMH':6,'PMH':7}
+                labels = {'Normal':0, 'CNV':1, 'GA':3, 'MRO':4, 'VMT':5}
             elif len(classes) == 7:
                 labels = {'Normal':0, 'CNV':1, 'CSR':2, 'GA':3, 'MRO':4, 'VMT':5, 'MH':6}  
             

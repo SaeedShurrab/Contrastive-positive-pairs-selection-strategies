@@ -11,7 +11,7 @@ from src.data.downstream.utils import keep_number
 from tqdm import tqdm
 
 splits = ['train', 'val', 'test']
-random.seed(1256)
+random.seed(24)
 #1256:multi-class seed for ssl models
 try:
     os.mkdir('data')
@@ -246,12 +246,12 @@ if args.dataset == 'down-stream':
                 os.mkdir(os.path.join(multi_class_dir,split,'VMT'))
                 os.mkdir(os.path.join(multi_class_dir,split,'CNV'))
                 os.mkdir(os.path.join(multi_class_dir,split,'GA'))
-                os.mkdir(os.path.join(multi_class_dir,split,'CSR'))
-                if args.reduce:
-                    os.mkdir(os.path.join(multi_class_dir,split,'MH'))
-                else:
-                    os.mkdir(os.path.join(multi_class_dir,split,'PMH'))
-                    os.mkdir(os.path.join(multi_class_dir,split,'FMH'))
+                #os.mkdir(os.path.join(multi_class_dir,split,'CSR'))
+                #if args.reduce:
+                #    os.mkdir(os.path.join(multi_class_dir,split,'MH'))
+                #else:
+                #    os.mkdir(os.path.join(multi_class_dir,split,'PMH'))
+                #    os.mkdir(os.path.join(multi_class_dir,split,'FMH'))
             except:
                 pass
 
@@ -273,8 +273,8 @@ if args.dataset == 'down-stream':
                         shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','Normal'))
  
                 elif label == 'CSR':
-                    shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','CSR'))
-            
+                    #shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','CSR'))
+                    pass            
                 elif label == 'MRO':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MRO'))
             
@@ -287,17 +287,17 @@ if args.dataset == 'down-stream':
                 elif label == 'VMT':
                     shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','VMT'))
             
-                elif label == 'FMH':
-                    if args.reduce:
-                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MH'))
-                    else:
-                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','FMH'))
+                #elif label == 'FMH':
+                #    if args.reduce:
+                #        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MH'))
+                #    else:
+                #        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','FMH'))
             
-                elif label == 'PMH':
-                    if args.reduce:
-                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MH'))
-                    else:
-                        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','PMH'))
+                #elif label == 'PMH':
+                #    if args.reduce:
+                #        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','MH'))
+                #    else:
+                #        shutil.copy(os.path.join(raw_images_dir,image),os.path.join(multi_class_dir,'train','PMH'))
             
 
         else:
@@ -306,29 +306,29 @@ if args.dataset == 'down-stream':
         VAL_RATIO = 0.2
 
         val_normal_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','Normal'))) * VAL_RATIO) 
-        val_CSR_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','CSR'))) * VAL_RATIO)
+        #val_CSR_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','CSR'))) * VAL_RATIO)
         val_MRO_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','MRO'))) * VAL_RATIO)
         val_GA_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','GA'))) * VAL_RATIO)
         val_CNV_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','CNV'))) * VAL_RATIO)
         val_VMT_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','VMT'))) * VAL_RATIO)
-        if args.reduce:
-            val_MH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','MH'))) * VAL_RATIO)
-        else:
-            val_FMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','FMH'))) * VAL_RATIO)
-            val_PMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','PMH'))) * VAL_RATIO)
+        #if args.reduce:
+        #    val_MH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','MH'))) * VAL_RATIO)
+        #else:
+        #    val_FMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','FMH'))) * VAL_RATIO)
+        #    val_PMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'train','PMH'))) * VAL_RATIO)
 
     
         val_normal_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','Normal')),k=val_normal_n)
-        val_CSR_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','CSR')),k=val_CSR_n)
+        #val_CSR_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','CSR')),k=val_CSR_n)
         val_MRO_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','MRO')),k=val_MRO_n)
         val_GA_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','GA')),k=val_GA_n)
         val_CNV_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','CNV')),k=val_CNV_n)
         val_VMT_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','VMT')),k=val_VMT_n)
-        if args.reduce:
-            val_MH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','MH')),k=val_MH_n)
-        else:
-            val_FMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','FMH')),k=val_FMH_n)
-            val_PMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','PMH')),k=val_PMH_n)
+        #if args.reduce:
+        #    val_MH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','MH')),k=val_MH_n)
+        #else:
+        #    val_FMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','FMH')),k=val_FMH_n)
+        #    val_PMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'train','PMH')),k=val_PMH_n)
 
         
 
@@ -341,10 +341,10 @@ if args.dataset == 'down-stream':
                             os.path.join(multi_class_dir,'val','Normal',image)
                             )
 
-            for image in tqdm(val_CSR_images):
-                shutil.move(os.path.join(multi_class_dir,'train','CSR',image), 
-                            os.path.join(multi_class_dir,'val','CSR',image)
-                            )
+            #for image in tqdm(val_CSR_images):
+            #    shutil.move(os.path.join(multi_class_dir,'train','CSR',image), 
+            #                os.path.join(multi_class_dir,'val','CSR',image)
+             #               )
 
             for image in tqdm(val_MRO_images):
                 shutil.move(os.path.join(multi_class_dir,'train','MRO',image), 
@@ -365,22 +365,22 @@ if args.dataset == 'down-stream':
                 shutil.move(os.path.join(multi_class_dir,'train','VMT',image), 
                             os.path.join(multi_class_dir,'val','VMT',image)
                             )
-            if args.reduce:
-                for image in tqdm(val_MH_images):
-                    shutil.move(os.path.join(multi_class_dir,'train','MH',image), 
-                                os.path.join(multi_class_dir,'val','MH',image)
-                                )
+            #if args.reduce:
+            #    for image in tqdm(val_MH_images):
+            #        shutil.move(os.path.join(multi_class_dir,'train','MH',image), 
+            #                    os.path.join(multi_class_dir,'val','MH',image)
+            #                    )
 
-            else:                
-                for image in tqdm(val_FMH_images):
-                    shutil.move(os.path.join(multi_class_dir,'train','FMH',image), 
-                                os.path.join(multi_class_dir,'val','FMH',image)
-                                )
+            #else:                
+            #    for image in tqdm(val_FMH_images):
+            #        shutil.move(os.path.join(multi_class_dir,'train','FMH',image), 
+            #                    os.path.join(multi_class_dir,'val','FMH',image)
+            #                    )
 
-                for image in tqdm(val_PMH_images):
-                    shutil.move(os.path.join(multi_class_dir,'train','PMH',image), 
-                                os.path.join(multi_class_dir,'val','PMH',image)
-                                )
+            #    for image in tqdm(val_PMH_images):
+            #        shutil.move(os.path.join(multi_class_dir,'train','PMH',image), 
+            #                    os.path.join(multi_class_dir,'val','PMH',image)
+            #                    )
 
 
         else:
@@ -391,29 +391,29 @@ if args.dataset == 'down-stream':
         TEST_RATIO = (TEST_RATIO/(VAL_RATIO))
 
         test_normal_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','Normal'))) * TEST_RATIO) 
-        test_CSR_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','CSR'))) * TEST_RATIO)
+        #test_CSR_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','CSR'))) * TEST_RATIO)
         test_MRO_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','MRO'))) * TEST_RATIO)
         test_GA_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','GA'))) * TEST_RATIO)
         test_CNV_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','CNV'))) * TEST_RATIO)
         test_VMT_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','VMT'))) * TEST_RATIO)
-        if args.reduce:
-            test_MH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','MH'))) * TEST_RATIO)
-        else:
-            test_FMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','FMH'))) * TEST_RATIO)
-            test_PMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','PMH'))) * TEST_RATIO)
+        #if args.reduce:
+        #    test_MH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','MH'))) * TEST_RATIO)
+        #else:
+        #    test_FMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','FMH'))) * TEST_RATIO)
+        #    test_PMH_n = int(len(os.listdir(os.path.join(multi_class_dir,'val','PMH'))) * TEST_RATIO)
 
     
         test_normal_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','Normal')),k=test_normal_n)
-        test_CSR_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','CSR')),k=test_CSR_n,)
+        #test_CSR_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','CSR')),k=test_CSR_n,)
         test_MRO_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','MRO')),k=test_MRO_n,)
         test_GA_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','GA')),k=test_GA_n,)
         test_CNV_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','CNV')),k=test_CNV_n,)
         test_VMT_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','VMT')),k=test_VMT_n,)
-        if args.reduce:
-            test_MH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','MH')),k=test_MH_n,)
-        else:
-            test_FMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','FMH')),k=test_FMH_n,)
-            test_PMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','PMH')),k=test_PMH_n,)
+        #if args.reduce:
+        #    test_MH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','MH')),k=test_MH_n,)
+        #else:
+        #    test_FMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','FMH')),k=test_FMH_n,)
+        #    test_PMH_images = random.sample(os.listdir(os.path.join(multi_class_dir,'val','PMH')),k=test_PMH_n,)
 
 
 
@@ -426,10 +426,10 @@ if args.dataset == 'down-stream':
                             os.path.join(multi_class_dir,'test','Normal',image)
                             )
 
-            for image in tqdm(test_CSR_images):
-                shutil.move(os.path.join(multi_class_dir,'val','CSR',image), 
-                            os.path.join(multi_class_dir,'test','CSR',image)
-                            )
+            #for image in tqdm(test_CSR_images):
+            #    shutil.move(os.path.join(multi_class_dir,'val','CSR',image), 
+            #                os.path.join(multi_class_dir,'test','CSR',image)
+            #                )
 
             for image in tqdm(test_MRO_images):
                 shutil.move(os.path.join(multi_class_dir,'val','MRO',image), 
@@ -451,21 +451,21 @@ if args.dataset == 'down-stream':
                             os.path.join(multi_class_dir,'test','VMT',image)
                             )
 
-            if args.reduce:
-                for image in tqdm(test_MH_images):
-                    shutil.move(os.path.join(multi_class_dir,'val','MH',image), 
-                                os.path.join(multi_class_dir,'test','MH',image)
-                                )
-            else:    
-                for image in tqdm(test_FMH_images):
-                    shutil.move(os.path.join(multi_class_dir,'val','FMH',image), 
-                                os.path.join(multi_class_dir,'test','FMH',image)
-                                )
+            #if args.reduce:
+            #    for image in tqdm(test_MH_images):
+            #        shutil.move(os.path.join(multi_class_dir,'val','MH',image), 
+            #                    os.path.join(multi_class_dir,'test','MH',image)
+            #                    )
+            #else:    
+            #    for image in tqdm(test_FMH_images):
+            #        shutil.move(os.path.join(multi_class_dir,'val','FMH',image), 
+            #                    os.path.join(multi_class_dir,'test','FMH',image)
+            #                    )
 
-                for image in tqdm(test_PMH_images):
-                    shutil.move(os.path.join(multi_class_dir,'val','PMH',image), 
-                                os.path.join(multi_class_dir,'test','PMH',image)
-                                )
+            #    for image in tqdm(test_PMH_images):
+            #        shutil.move(os.path.join(multi_class_dir,'val','PMH',image), 
+            #                    os.path.join(multi_class_dir,'test','PMH',image)
+            #                    )
         else:
             print('multi-class test data is already prepared')
 
