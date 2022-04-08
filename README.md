@@ -43,19 +43,19 @@ Follow the following steps:
 
 1. Clone this repo
 
-   ```
-   https://github.com/SaeedShurrab/thesis-code.git
+   ```shell
+   git clone https://github.com/SaeedShurrab/thesis-code.git
    ```
 
 2. Navigate to the cloned repository directory:
 
-   ```
+   ```shell
    cd thesis-code
    ```
 
 3.  Install the environment packages 
 
-   ```
+   ```shell
    pip install -r requirements.txt
    ```
 
@@ -72,17 +72,17 @@ In addition, the file ``data-structuring.py`` is responsible for building both d
 
 Create data directory inside the project repo:
 
-```
+```shell
 mkdir data
 ```
 
  
 
-### Pretext data
+### Pretext data setup
 
 To prepare the pretext dataset, run the following command
 
-```
+```shell
 python data-structuring.py --dataset pretext
 ```
 
@@ -103,27 +103,102 @@ The file will automatically extract the dataset from the archive file and prepar
 
 
 
-### down-stream data
+### down-stream data setup
 
 To prepare the down-stream data, run the following command
 
-```
+```shell
 python data-structuring.py --dataset down-stream
 ```
 
 the program will prompt you to select the suitable classification data form which may be ``binary``, ``multi-class`` or `` grading``
 
-```
+```shell
 select downstream data form which can be (binary, multi-class, grading): binary
 ```
 
 For **grading** task, the program will prompt you to select certain disease which may be ``CSR``, ``MRO``,  ``GA``, ``CNV``, ``FMH``, ``PMH``, or `` VMT`` 
 
-```
-Please select the disease at which grading data will be prepared for (CSR, MRO, GA, CNV, FMH, PMH, VMT):
+```shell
+Please select the disease at which grading data will be prepared for (CSR, MRO, GA, CNV, FMH, PMH, VMT): MRO
 ```
 
 Upon preparation completion, each data form will be available in a directory indicated by its form and split into ``train``, ``val``, and ``test`` according to the following proportions ``80%``, ``15%`` and ``5%`` respectively.
 
 
+
+## Training setup
+
+The research project contains two training tasks which are:
+
+1. pretext task training
+2. down-stream task training
+
+for each task, there is a specific training file which are : ``simsiam-trainer.py``  for training the pretext dataset and ``downs-stream-trainier.py`` for downs-stream training task.
+
+
+
+### pretext training setup
+
+To train the pretext training task, run the following command:
+
+```shell
+python simsiam-trainer.py
+```
+
+This command will run the pretraining task with default arguments.
+
+
+
+To customize the training arguments, run the following command and adjust the required training arguments:
+
+```shell
+python simsiam-trainer.py --strategy consecutive --data-dir /datastores/pretext/ --batch-size 128 --num-workers 8 --pin-memory True --backbone resnet18 --optimizer sgd --learning-rate 0.005 --weight-decay 0.0001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 10
+```
+
+
+
+to gain extra information about the each argument, run the following command
+
+```shell
+python simsiam-trainer.py --help
+```
+
+
+
+### down-stream training setup
+
+To train the down-stream training task, run the following command:
+
+```shell
+python downs-stream-trainier.py
+```
+
+This command will run the pretraining task with default arguments.
+
+
+
+To customize the training arguments, run the following command and adjust the required training arguments:
+
+```shell
+python downs-stream-trainier.py --training-scheme fine-tune --ssl-model SimSiam --strategy consecutive --weights-path ./epoch=93-step=25285.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory True --backbone resnet18 --optimizer adam --learning-rate 0.000002 --weight-decay 0.001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 5
+```
+
+
+
+to gain extra information about the each argument, run the following command
+
+```shell
+python downs-stream-trainier.py --help
+```
+
+
+
+## Citation:
+
+Please consider citing our work when using this repo:
+
+```
+to be included later on
+```
 
