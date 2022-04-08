@@ -59,4 +59,45 @@ Follow the following steps:
    pip install -r requirements.txt
    ```
 
-   
+
+
+## Data setup
+
+The research project contains two data sets which are:
+
+1. pretext dataset
+2. down-stream dataset
+
+In addition, the file ``data-structuring.py`` is responsible for building both datasets in a **training** ready format as follow:
+
+Create data directory inside the project repo:
+
+```
+mkdir data
+```
+
+ 
+
+### Pretext data
+
+To prepare the pretext dataset, run the following command
+
+```
+python data-structuring.py --dataset pretext
+```
+
+The file will automatically extract the dataset from the archive file and prepare it. In addition, the dataset is available in this format:
+
+```
+./pretext/p#/session-date/eye-direction/xxx-p#-secession-date-eye-direction-orientation.bmp
+```
+
+**explanation**
+
+1. **pretext**: pretext dataset directory.
+2. **p#**: each patient data are in one folder, e.g., ``p0``: patient 0, ``p1``: pateint 1.....etc.
+3. **session-date** for each patient, there may be a single or multiple diagnosis sessions, each session data in one directory: e.g, ``20200831``
+4. **eye-direction**: for each patient, the data of every eye is is placed in a separate directory which may be ``L`` or ``R`
+5. **xxx-p0-secession-date-eye-direction-orientation.bmp**: each eye-direction folders contains two image where one is horizontal ``x-axis`` and the second is vertical ``y-axis``. 
+6. **naming convention**: ``xxx: serial number`` | ``p#: patient number`` | ``session-date: session-date`` | ``eye-direction: eye-direction`` | ``orientation:  x or y`` 
+
