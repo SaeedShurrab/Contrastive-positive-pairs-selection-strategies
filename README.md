@@ -55,9 +55,11 @@ Follow the following steps:
 
 3.  Install the environment packages 
 
-   ```shell
+   ```
    pip install -r requirements.txt
    ```
+
+   
 
 
 
