@@ -101,3 +101,29 @@ The file will automatically extract the dataset from the archive file and prepar
 5. **xxx-p0-secession-date-eye-direction-orientation.bmp**: each eye-direction folders contains two image where one is horizontal ``x-axis`` and the second is vertical ``y-axis``. 
 6. **naming convention**: ``xxx: serial number`` | ``p#: patient number`` | ``session-date: session-date`` | ``eye-direction: eye-direction`` | ``orientation:  x or y`` 
 
+
+
+### down-stream data
+
+To prepare the down-stream data, run the following command
+
+```
+python data-structuring.py --dataset down-stream
+```
+
+the program will prompt you to select the suitable classification data form which may be ``binary``, ``multi-class`` or `` grading``
+
+```
+select downstream data form which can be (binary, multi-class, grading): binary
+```
+
+For **grading** task, the program will prompt you to select certain disease which may be ``CSR``, ``MRO``,  ``GA``, ``CNV``, ``FMH``, ``PMH``, or `` VMT`` 
+
+```
+Please select the disease at which grading data will be prepared for (CSR, MRO, GA, CNV, FMH, PMH, VMT):
+```
+
+Upon preparation completion, each data form will be available in a directory indicated by its form and split into ``train``, ``val``, and ``test`` according to the following proportions ``80%``, ``15%`` and ``5%`` respectively.
+
+
+
