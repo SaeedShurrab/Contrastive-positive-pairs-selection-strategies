@@ -26,3 +26,37 @@
 
 
 # How to run the code:
+
+## General requirements
+
+### Python version
+
+To avoid dependency problems, please make sure that your python version is: 
+
+```
+python 3.8.3+
+```
+
+### Environment setup
+
+Follow the following steps:
+
+1. Clone this repo
+
+   ```
+   https://github.com/SaeedShurrab/thesis-code.git
+   ```
+
+2. Navigate to the cloned repository directory:
+
+   ```
+   cd thesis-code
+   ```
+
+3.  Install the environment packages 
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+   
