@@ -260,6 +260,6 @@ if __name__ == '__main__':
 
 
 
-# python downs-stream-trainier.py --training-scheme fine-tune --ssl-model SimSiam --strategy consecutive --weights-path ./epoch=93-step=25285.ckpt --classification-problem grading --data-dir ./data/down-stream --batch-size 16 --pin-memory True --backbone resnet18 --optimizer adam --learning-rate 0.000002 --weight-decay 0.001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 5
+# python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy consecutive --weights-path ./epoch=93-step=25285.ckpt --classification-problem benchmark --data-dir ./data/down-stream --batch-size 16 --pin-memory True --backbone resnet18 --optimizer adam --learning-rate 0.000002 --weight-decay 0.001 --scheduler cosine --ngpus -1 --epochs 100 --precision 16 --es-delta 0.001 --es-patience 5
 
 # python downs-stream-trainier.py --training-scheme from-scratch --ssl-model SimSiam --strategy unrestricted --weights-path ./epoch=86-step=36104.ckpt --classification-problem multi-class --data-dir ./data/down-stream --batch-size 8 --pin-memory False --num-workers 0 --backbone resnet18 --optimizer adam --learning-rate 0.01 --weight-decay 0.0 --scheduler cosine --ngpus 0 --epochs 10 --precision 32 --es-delta 0.01 --es-patience 5 
