@@ -1,6 +1,6 @@
 # Project title:
 
-> **Retina’s Disorders Classification and Severity Grading via Optical Coherence Tomography Images and Self Supervised Learning Approaches**
+> **New Positive Pairs Selection Strategies in Self-Supervised Contrastive Learning Applied to Medical Images.**
 
 
 
