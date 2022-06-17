@@ -23,6 +23,14 @@
 
 
 
+## Citation:
+
+Please consider citing our work when using this repo:
+
+```
+to be included later on
+```
+
 
 
 # How to run the code:
@@ -195,12 +203,4 @@ python downs-stream-trainier.py --help
 ```
 
 
-
-## Citation:
-
-Please consider citing our work when using this repo:
-
-```
-to be included later on
-```
 
