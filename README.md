@@ -9,7 +9,7 @@
 | Name                | Role       | Email                                                        |
 | ------------------- | ---------- | ------------------------------------------------------------ |
 | Saeed A. Shurrab    | Student    | [sashurrab18@cit.just.edu.jo](mailto:sashurrab18@cit.just.edu.jo) |
-| Prof. Rehab Duwairi | Supervisor | [amerb@just.edu.jo](mailto:amerb@just.edu.jo)                |
+| Prof. Rehab Duwairi | Supervisor | [rehab@just.edu.jo](mailto:amerb@just.edu.jo)                |
 
 
 
